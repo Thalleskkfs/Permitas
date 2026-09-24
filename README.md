@@ -1,4 +1,4 @@
-# catalogo-saas
+# catalogo universal
 
 Plataforma multi-loja de catálogo de produtos. Cada loja publica seu catálogo em uma
 vitrine própria, e a negociação acontece pelo WhatsApp — não há checkout nem pagamento
