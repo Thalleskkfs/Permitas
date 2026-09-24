@@ -16,7 +16,7 @@ import type {
  * AdminProduct e afins, sem saber que a origem deixou de ser mock.
  */
 
-type ImageRow = { id: string; alt_text: string | null; position: number };
+type ImageRow = { id: string; alt_text: string | null; position: number; storage_path: string };
 type VariantRow = {
   id: string;
   name: string;
@@ -51,8 +51,17 @@ export type ProductRow = {
 const byPosition = <T extends { position: number }>(rows: T[]) =>
   [...rows].sort((a, b) => a.position - b.position);
 
+/**
+ * Rota que serve o bucket privado ao próprio painel autenticado; a leitura pública
+ * (vitrine) usa a mesma rota, mas resolve por outro caminho (ver modules/storefront).
+ */
 function toImage(row: ImageRow, productName: string): AdminImage {
-  return { id: row.id, alt: row.alt_text ?? productName };
+  return {
+    id: row.id,
+    alt: row.alt_text ?? productName,
+    storagePath: row.storage_path,
+    url: `/imagens/${row.storage_path}`,
+  };
 }
 
 function toVariant(row: VariantRow): AdminVariant {

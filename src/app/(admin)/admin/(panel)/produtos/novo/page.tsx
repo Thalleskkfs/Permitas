@@ -17,7 +17,7 @@ export default async function NovoProdutoPage() {
     <DashboardContainer className="flex flex-col gap-8">
       <PageHeader
         title="Novo produto"
-        description="As variantes podem ser adicionadas depois que o produto for criado."
+        description="Imagens e variantes podem ser adicionadas depois que o produto for criado."
       />
       <ProductForm categories={categories} tags={tags} collections={collections} />
     </DashboardContainer>

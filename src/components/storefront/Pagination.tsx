@@ -26,50 +26,75 @@ function getPageItems(current: number, total: number): PageItem[] {
   return items;
 }
 
-const itemStyles =
-  "focus-ring flex size-10 items-center justify-center rounded-md border text-sm";
+/*
+ * Até cinco páginas, os números cabem numa linha a 360px (7 alvos de 44px). Acima
+ * disso o celular troca os números por "3 de 12" entre as setas: uma linha só, sem
+ * quebrar, e as setas continuam do tamanho do polegar.
+ */
+const CABE_NO_CELULAR = 5;
+
+// size-11 = 44px. Pílula como as demais ações; troca de página não anima, só o toque.
+const alvo =
+  "pressionavel focus-ring flex size-11 items-center justify-center rounded-full text-sm tabular-nums";
+
+// Seta: botão vazado com o contorno de controle.
+const seta = `${alvo} border border-control-border text-foreground hover:border-foreground hover:bg-foreground/5`;
+const setaInativa = `${alvo} border border-border text-muted-foreground opacity-40`;
 
 export function Pagination({ currentPage, totalPages, getHref }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   const hasPrevious = currentPage > 1;
   const hasNext = currentPage < totalPages;
+  const compactaNoCelular = totalPages > CABE_NO_CELULAR;
 
   return (
-    <nav aria-label="Paginação" className="flex justify-center">
-      <ul className="flex flex-wrap items-center justify-center gap-2">
+    <nav aria-label="Paginação" className="flex justify-center pt-2">
+      <ul className="flex max-w-full items-center gap-1 sm:gap-1.5">
         <li>
           {hasPrevious ? (
-            <Link
-              href={getHref(currentPage - 1)}
-              aria-label="Página anterior"
-              className={`${itemStyles} border-border hover:bg-muted`}
-            >
-              <ChevronLeftIcon className="size-4" />
+            <Link href={getHref(currentPage - 1)} aria-label="Página anterior" className={seta}>
+              <ChevronLeftIcon className="size-5" />
             </Link>
           ) : (
-            <span aria-hidden="true" className={`${itemStyles} border-border opacity-40`}>
-              <ChevronLeftIcon className="size-4" />
+            <span aria-hidden="true" className={setaInativa}>
+              <ChevronLeftIcon className="size-5" />
             </span>
           )}
         </li>
 
+        {compactaNoCelular && (
+          <li className="px-3 text-sm text-muted-foreground tabular-nums sm:hidden">
+            <span className="sr-only">Página </span>
+            <span className="font-medium text-foreground">{currentPage}</span> de {totalPages}
+          </li>
+        )}
+
         {getPageItems(currentPage, totalPages).map((item) => (
-          <li key={item}>
+          <li key={item} className={compactaNoCelular ? "hidden sm:block" : undefined}>
             {typeof item === "string" ? (
-              <span aria-hidden="true" className="flex size-10 items-center justify-center text-muted-foreground">
+              <span
+                aria-hidden="true"
+                className="flex size-11 items-center justify-center text-muted-foreground"
+              >
                 …
               </span>
+            ) : item === currentPage ? (
+              // Página atual: contorno rosé ("aqui você está"). As demais não têm
+              // contorno, então a diferença se lê também pela forma, não só pela cor.
+              <Link
+                href={getHref(item)}
+                aria-label={`Página ${item}`}
+                aria-current="page"
+                className={`${alvo} border border-accent font-semibold text-foreground`}
+              >
+                {item}
+              </Link>
             ) : (
               <Link
                 href={getHref(item)}
                 aria-label={`Página ${item}`}
-                aria-current={item === currentPage ? "page" : undefined}
-                className={`${itemStyles} ${
-                  item === currentPage
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border hover:bg-muted"
-                }`}
+                className={`${alvo} text-muted-foreground hover:bg-foreground/5 hover:text-foreground`}
               >
                 {item}
               </Link>
@@ -79,16 +104,12 @@ export function Pagination({ currentPage, totalPages, getHref }: PaginationProps
 
         <li>
           {hasNext ? (
-            <Link
-              href={getHref(currentPage + 1)}
-              aria-label="Próxima página"
-              className={`${itemStyles} border-border hover:bg-muted`}
-            >
-              <ChevronRightIcon className="size-4" />
+            <Link href={getHref(currentPage + 1)} aria-label="Próxima página" className={seta}>
+              <ChevronRightIcon className="size-5" />
             </Link>
           ) : (
-            <span aria-hidden="true" className={`${itemStyles} border-border opacity-40`}>
-              <ChevronRightIcon className="size-4" />
+            <span aria-hidden="true" className={setaInativa}>
+              <ChevronRightIcon className="size-5" />
             </span>
           )}
         </li>

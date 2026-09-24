@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { startTransition, useActionState, useEffect, useRef } from "react";
 import { IDLE_ACTION_STATE, type ActionState } from "@/modules/catalog/errors";
 import { buttonClass } from "./ui";
 
@@ -48,7 +48,17 @@ export function CatalogEntityDialog({
       aria-labelledby="entity-dialog-title"
       className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-md border border-border bg-background p-0 text-foreground backdrop:bg-black/40"
     >
-      <form action={formAction} className="flex flex-col gap-4 p-6">
+      <form
+        noValidate
+        onSubmit={(event) => {
+          // onSubmit em vez de <form action>: o React 19 limparia os campos ao recusar.
+          event.preventDefault();
+          if (pending) return;
+          const formData = new FormData(event.currentTarget);
+          startTransition(() => formAction(formData));
+        }}
+        className="flex flex-col gap-4 p-6"
+      >
         <h2 id="entity-dialog-title" className="text-lg font-semibold">
           {title}
         </h2>

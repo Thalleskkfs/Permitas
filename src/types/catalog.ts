@@ -51,11 +51,33 @@ export type Category = {
   name: string;
 };
 
-export type StoreHero = {
+/** Um banner de destaque da hero. Vem do painel; a ordem é a de exibição. */
+export type HeroSlide = {
+  id: string;
   title: string;
   subtitle?: string;
   actionLabel?: string;
   actionHref?: string;
+  /** Arte para telas largas (deitada). Sem ela, o banner não aparece no desktop. */
+  image?: ProductImage;
+  /** Arte para o celular (em pé). Sem ela, o celular usa `image`. */
+  imageMobile?: ProductImage;
+};
+
+export type StoreHero = {
+  /** Um só banner é o caso normal; vários viram carrossel. Vazio esconde a hero. */
+  slides: HeroSlide[];
+  /**
+   * Segunda chamada, fixa em todos os banners: o WhatsApp da loja. Fica fora dos
+   * slides porque é o canal da loja, não um destaque que rotaciona.
+   */
+  contactLabel?: string;
+  contactHref?: string;
+  /**
+   * Selos curtos logo abaixo da hero (discrição, entrega, atendimento).
+   * São o texto que responde à principal objeção de quem compra: privacidade.
+   */
+  highlights?: string[];
 };
 
 export type Store = {
@@ -63,6 +85,16 @@ export type Store = {
   name: string;
   description?: string;
   hero?: StoreHero;
+  /**
+   * Canal de atendimento, cru como está no banco.
+   *
+   * A hero já traz um link pronto em `contactHref`, mas o carrinho e a página de
+   * produto montam a mensagem do zero (itens, quantidades, total) e precisam do número
+   * e do modelo de mensagem sem tratamento — quem normaliza é `buildWhatsAppUrl`.
+   * Opcionais porque a loja pode não ter número cadastrado.
+   */
+  whatsappNumber?: string | null;
+  whatsappMessageTemplate?: string | null;
 };
 
 export type CartItem = {

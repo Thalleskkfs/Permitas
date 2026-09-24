@@ -6,6 +6,7 @@ import { PlusIcon } from "@/components/dashboard/icons";
 import { buttonClass } from "@/components/dashboard/ui";
 import { requireCurrentStore } from "@/lib/auth/current-store";
 import { canDeleteStructures } from "@/modules/catalog/authorization";
+import { withProductPreviews } from "@/modules/catalog/actions";
 import { listCategoryTree, listProducts } from "@/modules/catalog/queries";
 import { productQuerySchema } from "@/modules/catalog/schemas";
 
@@ -24,10 +25,11 @@ export default async function ProdutosPage({ searchParams }: PageProps<"/admin/p
     page: single(params.page) || 1,
   });
 
-  const [{ products, total, page, pageCount }, categories] = await Promise.all([
+  const [{ products: lista, total, page, pageCount }, categories] = await Promise.all([
     listProducts(store.storeId, query),
     listCategoryTree(store.storeId),
   ]);
+  const products = await withProductPreviews(lista);
 
   return (
     <DashboardContainer className="flex flex-col gap-6">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { startTransition, useActionState, useEffect, useState } from "react";
 import { formatPrice } from "@/lib/format";
 import { deleteVariantAction, saveVariantAction } from "@/modules/catalog/actions";
 import { IDLE_ACTION_STATE } from "@/modules/catalog/errors";
@@ -36,7 +36,17 @@ function VariantForm({
   }, [state, onDone]);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4 rounded-md border border-border p-4">
+    <form
+      noValidate
+      onSubmit={(event) => {
+        // onSubmit em vez de <form action>: o React 19 limparia os campos ao recusar.
+        event.preventDefault();
+        if (pending) return;
+        const formData = new FormData(event.currentTarget);
+        startTransition(() => formAction(formData));
+      }}
+      className="flex flex-col gap-4 rounded-md border border-border p-4"
+    >
       <input type="hidden" name="productId" value={productId} />
       {variant && <input type="hidden" name="variantId" value={variant.id} />}
       <input type="hidden" name="position" value={position} />

@@ -85,13 +85,21 @@ describe("nenhuma policy nossa em storage", () => {
     assert.deepEqual(found, []);
   });
 
-  test("as demais funções private.* das etapas anteriores continuam existindo", async () => {
+  test("o inventário de funções private.* é exatamente o esperado", async () => {
+    // Igualdade exata, e não "contém": o schema private concentra as funções usadas
+    // dentro de policies, boa parte delas SECURITY DEFINER. Cada nova entrada aqui é
+    // uma superfície a mais de escalonamento de privilégio, então acrescentar uma
+    // precisa quebrar este teste e exigir revisão — não passar despercebido.
     const found = await rows(
       asSuperuser,
       `select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'private' order by p.proname`,
     );
     assert.deepEqual(found.map((r) => r.proname), [
+      // leitura pública do catálogo
+      "is_public_product",
+      "is_public_store",
+      // etapas anteriores
       "is_store_member",
       "is_store_owner",
       "prevent_category_cycle",

@@ -369,6 +369,62 @@ export type Database = {
         }
         Relationships: []
       }
+      store_banners: {
+        Row: {
+          id: string
+          store_id: string
+          title: string
+          subtitle: string | null
+          cta_label: string | null
+          cta_href: string | null
+          image_path: string | null
+          image_alt: string | null
+          active: boolean
+          position: number
+          created_at: string
+          updated_at: string
+          image_path_mobile: string | null
+        }
+        Insert: {
+          id?: string
+          store_id: string
+          title: string
+          subtitle?: string | null
+          cta_label?: string | null
+          cta_href?: string | null
+          image_path?: string | null
+          image_alt?: string | null
+          active?: boolean
+          position?: number
+          created_at?: string
+          updated_at?: string
+          image_path_mobile?: string | null
+        }
+        Update: {
+          id?: string
+          store_id?: string
+          title?: string
+          subtitle?: string | null
+          cta_label?: string | null
+          cta_href?: string | null
+          image_path?: string | null
+          image_alt?: string | null
+          active?: boolean
+          position?: number
+          created_at?: string
+          updated_at?: string
+          image_path_mobile?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_banners_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_domains: {
         Row: {
           id: string

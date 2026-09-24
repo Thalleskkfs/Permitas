@@ -1,11 +1,27 @@
 "use client";
 
-import Image from "next/image";
 import { useActionState, useState, useTransition } from "react";
 import { Field, buttonClass, inputClass } from "@/components/dashboard/ui";
 import { AUTH_MESSAGES, IDLE_FORM_STATE } from "@/lib/auth/admin-auth";
 import { enrollMfaAction, verifyMfaAction, type MfaEnrollment } from "@/modules/auth/actions";
 import { FormMessage } from "./AuthCard";
+
+/**
+ * Endereço exibível para o QR code do Supabase.
+ *
+ * Ele chega como `data:image/svg+xml;utf-8,<svg ...>` com o SVG CRU (sem codificar) e
+ * uma quebra de linha no fim. O `next/image` recusa esse valor e derruba a tela, e mesmo
+ * numa `<img>` o SVG cru quebra em `#` ou `%`. Então o SVG é separado do prefixo,
+ * aparado e codificado. Se já vier codificado (ou em base64), passa só aparado.
+ */
+function qrCodeSrc(raw: string) {
+  const valor = raw.trim();
+  const prefixo = /^data:image\/svg\+xml;[^,]*,/.exec(valor);
+  if (!prefixo) return valor;
+  const corpo = valor.slice(prefixo[0].length).trim();
+  if (!corpo.startsWith("<")) return valor;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(corpo)}`;
+}
 
 function CodeForm({ factorId, submitLabel }: { factorId?: string; submitLabel: string }) {
   const [state, formAction, pending] = useActionState(verifyMfaAction, IDLE_FORM_STATE);
@@ -56,8 +72,8 @@ export function MfaForm({ mode }: { mode: "enroll" | "verify" }) {
       <div className="flex flex-col gap-4">
         <FormMessage status={error ? "error" : "idle"} message={error} />
         <p className="text-sm text-muted-foreground">
-          O acesso administrativo exige verificação em duas etapas. Gere o código de
-          configuração e registre-o em um aplicativo autenticador.
+          Gere o código de configuração e registre-o em um aplicativo autenticador, como
+          Google Authenticator ou Authy.
         </p>
         <button
           type="button"
@@ -84,12 +100,13 @@ export function MfaForm({ mode }: { mode: "enroll" | "verify" }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col items-center gap-3 rounded-md border border-border p-4">
-        <Image
-          src={enrollment.qrCode}
+        {/* eslint-disable-next-line @next/next/no-img-element -- QR gerado na hora; não há o que otimizar */}
+        <img
+          src={qrCodeSrc(enrollment.qrCode)}
           alt="QR Code para configurar o aplicativo autenticador"
           width={180}
           height={180}
-          unoptimized
+          className="rounded-sm bg-white p-2"
         />
         <div className="w-full text-center">
           <p className="text-xs text-muted-foreground">Ou digite este código no aplicativo:</p>

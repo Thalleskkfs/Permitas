@@ -1,4 +1,4 @@
-import type { ProductStatus, RequestStatus, StockLevel } from "@/types/dashboard";
+import type { ProductStatus, StockLevel } from "@/types/dashboard";
 
 /**
  * Paleta neutra: a hierarquia vem do preenchimento e do contraste, não de cor temática.
@@ -26,13 +26,6 @@ const PRODUCT_STATUS: Record<ProductStatus, { label: string; tone: BadgeTone }> 
   archived: { label: "Arquivado", tone: "muted" },
 };
 
-const REQUEST_STATUS: Record<RequestStatus, { label: string; tone: BadgeTone }> = {
-  new: { label: "Novo", tone: "solid" },
-  "in-progress": { label: "Em atendimento", tone: "outline" },
-  confirmed: { label: "Confirmado", tone: "outline" },
-  cancelled: { label: "Cancelado", tone: "muted" },
-};
-
 const STOCK_LEVEL: Record<StockLevel, { label: string; tone: BadgeTone }> = {
   "in-stock": { label: "Em estoque", tone: "outline" },
   "low-stock": { label: "Baixo estoque", tone: "solid" },
@@ -41,11 +34,6 @@ const STOCK_LEVEL: Record<StockLevel, { label: string; tone: BadgeTone }> = {
 
 export function ProductStatusBadge({ status }: { status: ProductStatus }) {
   const { label, tone } = PRODUCT_STATUS[status];
-  return <Badge tone={tone}>{label}</Badge>;
-}
-
-export function RequestStatusBadge({ status }: { status: RequestStatus }) {
-  const { label, tone } = REQUEST_STATUS[status];
   return <Badge tone={tone}>{label}</Badge>;
 }
 

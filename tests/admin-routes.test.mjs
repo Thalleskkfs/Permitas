@@ -106,7 +106,11 @@ describe("não existe autenticação pública", () => {
     const handlers = await listFiles(SRC, (name) =>
       /^(route|middleware|proxy)\.(ts|tsx|js|mjs)$/.test(name),
     );
-    assert.deepEqual(handlers, [], "nenhum route handler deve existir");
+    // Única exceção: serve as fotos do bucket privado (next.config.ts documenta o porquê).
+    // Não tem nada de autenticação — qualquer OUTRO route handler ainda derruba o teste.
+    const ROTAS_CONHECIDAS = ["src/app/imagens/[...path]/route.ts"];
+    const inesperadas = handlers.map(relative).filter((file) => !ROTAS_CONHECIDAS.includes(file));
+    assert.deepEqual(inesperadas, [], "nenhum route handler além dos já revisados deve existir");
   });
 });
 
@@ -120,7 +124,9 @@ describe("toda rota administrativa passa pelo guarda", () => {
     const auth = pages.filter((file) => file.includes("(auth)"));
 
     assert.equal(panel.length + auth.length, pages.length, "toda página de /admin está em um dos grupos");
-    assert.equal(panel.length, 12, "as 12 telas do painel continuam existindo");
+    // Eram 12; "Clientes" e "Pedidos" saíram (a loja não tem conta de cliente nem pedido
+    // registrado — tudo se resolve no WhatsApp) e "Banners" entrou, resultando em 11.
+    assert.equal(panel.length, 11, "as 11 telas do painel continuam existindo");
     assert.ok(auth.length >= 5);
   });
 

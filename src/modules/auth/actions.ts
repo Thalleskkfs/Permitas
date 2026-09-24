@@ -80,16 +80,50 @@ export async function requestPasswordResetAction(
   return toRecoveryState(error);
 }
 
+/**
+ * O link do e-mail de recuperação volta com `?code=` (fluxo PKCE). Trocar esse código
+ * por uma sessão exige o verificador guardado em cookie no MESMO navegador que pediu a
+ * recuperação, então o código sozinho não serve a ninguém de fora. A sessão que nasce
+ * aqui é de primeiro fator (AAL1): com o segundo fator ativo, a troca de senha ainda pede
+ * o código do autenticador.
+ */
+export async function exchangeRecoveryCodeAction(
+  code: string,
+): Promise<{ ok: true; needsMfaCode: boolean } | { ok: false }> {
+  if (!code) return { ok: false };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  if (error) return { ok: false };
+
+  const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  return { ok: true, needsMfaCode: data?.currentLevel === "aal1" && data?.nextLevel === "aal2" };
+}
+
 export async function updatePasswordAction(
   _prevState: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
   const password = String(formData.get("password") ?? "");
   const confirmation = String(formData.get("passwordConfirmation") ?? "");
+  const code = text(formData, "code");
   if (!password || !confirmation) return errorState(AUTH_MESSAGES.missingFields);
   if (password !== confirmation) return errorState("As senhas não coincidem.");
 
   const supabase = await createClient();
+
+  // Com o segundo fator ativo, a senha só muda numa sessão AAL2: o link do e-mail
+  // sozinho não basta para tomar a conta.
+  const { data: nivel } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (nivel?.currentLevel === "aal1" && nivel?.nextLevel === "aal2") {
+    if (!code) return errorState("Informe o código do aplicativo autenticador.");
+    const { data: fatores } = await supabase.auth.mfa.listFactors();
+    const fator = fatores?.totp?.find((factor) => factor.status === "verified");
+    if (!fator) return errorState(AUTH_MESSAGES.generic);
+    const { error: mfaError } = await supabase.auth.mfa.challengeAndVerify({ factorId: fator.id, code });
+    if (mfaError) return errorState(toMfaMessage(mfaError));
+  }
+
   const { error } = await supabase.auth.updateUser({ password });
   if (error) return errorState(toPasswordUpdateMessage(error));
 

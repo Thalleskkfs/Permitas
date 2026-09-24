@@ -1,8 +1,9 @@
+import Image from "next/image";
 import { ImageIcon } from "./icons";
 
 /** Estilos compartilhados do painel, para as classes não se repetirem em cada tela. */
 
-/** Miniatura neutra. Não há imagens reais de produto nesta etapa. */
+/** Miniatura neutra, para quando o produto ainda não tem foto cadastrada. */
 export function ImagePlaceholder({ alt, className }: { alt: string; className?: string }) {
   return (
     <div
@@ -17,13 +18,32 @@ export function ImagePlaceholder({ alt, className }: { alt: string; className?: 
   );
 }
 
+/** Miniatura de produto: a primeira foto cadastrada, ou o placeholder neutro sem uma. */
+export function ProductThumbnail({
+  url,
+  alt,
+  className,
+}: {
+  url?: string;
+  alt: string;
+  className?: string;
+}) {
+  if (!url) return <ImagePlaceholder alt={alt} className={className} />;
+
+  return (
+    <div className={`relative overflow-hidden rounded-md border border-border bg-muted ${className ?? "size-10"}`}>
+      <Image src={url} alt={alt} fill sizes="40px" unoptimized={url.startsWith("http")} className="object-cover" />
+    </div>
+  );
+}
+
 type ButtonVariant = "primary" | "outline" | "ghost" | "danger";
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-primary text-primary-foreground hover:opacity-90",
-  outline: "border border-border hover:bg-muted",
+  outline: "border border-control-border hover:bg-muted",
   ghost: "text-muted-foreground hover:bg-muted hover:text-foreground",
-  danger: "border border-border text-foreground hover:bg-muted",
+  danger: "border border-control-border text-foreground hover:bg-muted",
 };
 
 export function buttonClass(variant: ButtonVariant = "outline", extra?: string) {
@@ -36,7 +56,7 @@ export function buttonClass(variant: ButtonVariant = "outline", extra?: string) 
 }
 
 export const inputClass =
-  "focus-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground";
+  "focus-ring w-full rounded-md border border-control-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground";
 
 export function Field({
   label,

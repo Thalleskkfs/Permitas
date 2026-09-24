@@ -85,6 +85,7 @@ const NAV_ICONS: Record<DashboardIconName, (props: IconProps) => React.ReactElem
   inbox: InboxIcon,
   users: UsersIcon,
   palette: PaletteIcon,
+  image: ImageIcon,
   settings: SettingsIcon,
 };
 

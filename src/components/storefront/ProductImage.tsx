@@ -10,9 +10,14 @@ type ProductImageProps = {
 };
 
 export function ProductImage({ image, sizes, priority, className }: ProductImageProps) {
+  // Quadrado é o formato padrão (galeria, carrinho). Quem precisa de outra proporção,
+  // como o card em retrato 2:3, manda a sua própria classe `aspect-*`: duas proporções
+  // na mesma lista de classes brigariam pela ordem do CSS, então a padrão sai de cena.
+  const proporcao = className?.includes("aspect-") ? "" : "aspect-square";
+
   return (
     <div
-      className={`relative aspect-square overflow-hidden bg-muted text-muted-foreground ${className ?? ""}`}
+      className={`relative overflow-hidden bg-muted text-muted-foreground ${proporcao} ${className ?? ""}`}
     >
       {image?.src ? (
         <Image

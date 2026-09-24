@@ -13,7 +13,7 @@ import { FilterBar } from "./FilterBar";
 import { SearchInput } from "./SearchInput";
 import { ProductStatusBadge } from "./StatusBadge";
 import { PlusIcon } from "./icons";
-import { ImagePlaceholder, buttonClass } from "./ui";
+import { ProductThumbnail, buttonClass } from "./ui";
 
 const FILTERS = [
   { value: "all", label: "Todos" },
@@ -99,7 +99,9 @@ export function ProductTable({
       key: "image",
       header: <span className="sr-only">Imagem</span>,
       width: "4rem",
-      cell: (product) => <ImagePlaceholder alt={product.images[0]?.alt ?? product.name} />,
+      cell: (product) => (
+        <ProductThumbnail url={product.images[0]?.url} alt={product.images[0]?.alt ?? product.name} />
+      ),
     },
     {
       key: "name",

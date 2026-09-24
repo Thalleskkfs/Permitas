@@ -8,8 +8,6 @@
 
 export type ProductStatus = "draft" | "published" | "archived";
 
-export type RequestStatus = "new" | "in-progress" | "confirmed" | "cancelled";
-
 export type StockLevel = "in-stock" | "low-stock" | "out-of-stock";
 
 export type AdminStore = {
@@ -27,6 +25,10 @@ export type AdminUser = {
 export type AdminImage = {
   id: string;
   alt: string;
+  /** Caminho no bucket, ex.: "{storeId}/{productId}/{arquivo}". Usado para montar a URL e para excluir/reordenar. */
+  storagePath: string;
+  /** URL pública servida por /imagens, pronta para <Image>. */
+  url: string;
 };
 
 export type AdminVariant = {
@@ -98,28 +100,19 @@ export type AdminStockRow = {
   stock: number;
 };
 
-export type AdminRequest = {
-  id: string;
-  code: string;
-  customerName: string;
-  phone: string;
-  itemCount: number;
-  estimatedTotalCents: number;
-  createdAt: string;
-  status: RequestStatus;
-};
-
-export type AdminCustomer = {
-  id: string;
-  name: string;
-  phone: string;
-  lastRequestAt: string;
-  requestCount: number;
-};
-
 export type DashboardStats = {
   totalProducts: number;
   publishedProducts: number;
   inStockProducts: number;
-  openRequests: number;
+};
+
+/** Banner da hero no painel. As prévias são URLs assinadas e temporárias (banner inativo não é público). */
+export type AdminBanner = {
+  id: string;
+  title: string;
+  /** Destino ao clicar: "" (sem link), a lista completa ou uma categoria. */
+  href: string;
+  active: boolean;
+  desktopUrl?: string;
+  mobileUrl?: string;
 };

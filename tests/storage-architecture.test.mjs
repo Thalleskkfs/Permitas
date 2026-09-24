@@ -172,18 +172,29 @@ describe("barreira server-only", () => {
 });
 
 describe("nenhuma exposição pública do Storage", () => {
-  test("não existe route handler nem middleware no projeto", async () => {
-    const handlers = await listFiles(SRC, (name) => /^(route|middleware|proxy)\.(ts|tsx|js|mjs)$/.test(name));
-    assert.deepEqual(handlers, []);
+  // A rota pública de imagens é o único endpoint do projeto. Ela só entrega arquivo que
+  // uma linha visível ao visitante referencia (foto de produto publicado, banner ativo).
+  const IMAGE_ROUTE = "src/app/imagens/[...path]/route.ts";
+  const posix = (file) => String(file).replace(/\\/g, "/");
+
+  test("o único route handler é a rota pública de imagens, e não há middleware", async () => {
+    const handlers = (await listFiles(SRC, (name) => /^(route|middleware|proxy)\.(ts|tsx|js|mjs)$/.test(name))).map(posix);
+    assert.equal(handlers.length, 1, `handlers encontrados: ${handlers.join(", ")}`);
+    assert.ok(handlers[0].endsWith(IMAGE_ROUTE), handlers[0]);
   });
 
-  test("nada importa o helper de Storage ainda (não está ligado a página ou endpoint)", async () => {
+  test("o helper de Storage só é importado pela rota de imagens ou por Server Actions", async () => {
+    // Página e componente nunca chegam à service_role, nem indiretamente: quem precisa
+    // de imagem passa pela rota pública (leitura) ou por uma action do painel (escrita),
+    // e as actions autorizam antes de tocar no bucket.
     const files = await listFiles(SRC, isSource);
     for (const file of files) {
-      if (file.endsWith("src/lib/storage/catalog-images.ts")) continue;
-      for (const specifier of extractImports(await read(file))) {
-        assert.ok(!/storage\/catalog-images$/.test(specifier), `${file} importa o helper`);
-      }
+      const path = posix(file);
+      if (path.endsWith("src/lib/storage/catalog-images.ts")) continue;
+      const source = await read(file);
+      if (!extractImports(source).some((specifier) => /storage\/catalog-images$/.test(specifier))) continue;
+      const isServerAction = /^\s*["']use server["']/.test(source);
+      assert.ok(path.endsWith(IMAGE_ROUTE) || isServerAction, `${path} importa o helper de Storage`);
     }
   });
 

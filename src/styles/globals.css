@@ -1,15 +1,42 @@
 @import "tailwindcss";
 
+/*
+ * Tema: SOMENTE ESCURO, na vitrine e no painel, por decisão de produto. Não existe modo
+ * claro nem alternância, e o sistema operacional do visitante não interfere. O painel
+ * /admin usa a mesma paleta da marca, então a loja e a administração falam a mesma língua.
+ *
+ * Declarado na raiz, e não num wrapper, para o `body` herdar o fundo escuro — senão
+ * sobraria uma faixa clara ao puxar a página além do fim.
+ *
+ * Paleta oficial da marca. Trocar a marca é trocar este bloco: nenhum componente
+ * conhece cor literal.
+ *
+ * Contraste (WCAG) conferido par a par. Três regras decorrem dele:
+ *   - o vinho NÃO serve como cor de texto, nem como único sinal de estado sobre o fundo
+ *     (1,9:1). Seleção e foco usam o rosé (--accent / --ring, 6,8:1);
+ *   - o botão de WhatsApp leva texto ESCURO: branco sobre o verde fica em 1,75:1;
+ *   - a borda (1,4:1) é divisória decorativa. Onde ela for o único contorno de um
+ *     controle, como um campo de formulário, é preciso reforço.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --border: #e4e4e7;
-  --primary: #171717;
-  --primary-foreground: #fafafa;
-  --secondary: #e4e4e7;
-  --secondary-foreground: #171717;
+  color-scheme: dark;
+
+  --background: #110b0e; /* fundo principal — preto vinho */
+  --muted: #1a1014; /* superfície — vinho quase preto */
+  --card: #24151b; /* cards e áreas elevadas */
+  --foreground: #f5eff1; /* texto principal — off-white */
+  --muted-foreground: #b9aab0; /* texto secundário — cinza rosado */
+  --border: #3a252d; /* bordas — vinho acinzentado */
+  --primary: #7a1f3d; /* vinho principal — borgonha */
+  --primary-hover: #92294b; /* vinho hover — borgonha claro */
+  --primary-dark: #55152c; /* vinho escuro */
+  --primary-foreground: #f5eff1;
+  --secondary: #24151b;
+  --secondary-foreground: #f5eff1;
+  --accent: #c9859a; /* destaque discreto — rosé queimado */
+  --ring: #c9859a;
+  --whatsapp: #25d366; /* verde original do WhatsApp */
+  --whatsapp-foreground: #110b0e;
   --radius: 0.5rem;
 }
 
@@ -18,21 +45,167 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
   --color-border: var(--border);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-dark: var(--primary-dark);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-ring: var(--ring);
+  --color-whatsapp: var(--whatsapp);
+  --color-whatsapp-foreground: var(--whatsapp-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 4px);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-jost);
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --color-control-border: var(--control-border);
+  --radius-card: 0.75rem;
+  --ease-spring: var(--ease-mola);
+  --ease-spring-bounce: var(--ease-mola-impulso);
+}
+
+/*
+ * Tokens de tipografia, forma e movimento da vitrine. Não trazem cor nova: o contorno
+ * reforçado dos controles é uma mistura de duas cores da paleta.
+ *
+ * Escala tipográfica (celular -> desktop). O título usa a família de exibição com
+ * peso leve; corpo e interface seguem na família de texto.
+ *   display   40 -> 72px, altura 1.02, tracking -0.025em
+ *   titulo-1  30 -> 44px, altura 1.08, tracking -0.02em
+ *   titulo-2  22 -> 28px, altura 1.15, tracking -0.01em
+ *   corpo     16px, altura 1.55
+ *   apoio     14px, altura 1.5
+ *   legenda   12px, altura 1.4, tracking 0.01em
+ */
+:root {
+  --texto-display: clamp(2.5rem, 1.6rem + 3.8vw, 4.5rem);
+  --texto-titulo-1: clamp(1.875rem, 1.5rem + 1.6vw, 2.75rem);
+  --texto-titulo-2: clamp(1.375rem, 1.25rem + 0.55vw, 1.75rem);
+  /* Títulos de seção da vitrine no desktop (lg+): 43px em 1280, 46px em 1440, 52px em 1920. */
+  --texto-secao: clamp(2.25rem, 1.1rem + 2vw, 3.25rem);
+
+  /*
+   * Contorno de controle: a borda da paleta (1,4:1) some no fundo escuro quando é o
+   * único limite de um campo ou botão vazado. Misturar o texto secundário a ela leva o
+   * contorno acima de 3:1 sem inventar cor.
+   */
+  --control-border: color-mix(in oklab, var(--muted-foreground) 62%, var(--border));
+
+  /*
+   * Movimento. As curvas imitam molas: `--ease-mola` é uma mola criticamente
+   * amortecida (resposta 0,4s, sem ultrapassar o alvo), a padrão de tudo. A com
+   * impulso (amortecimento 0,8) passa um pouco do alvo e volta: só para o que o
+   * visitante arremessou com o dedo, nunca para algo que apenas apareceu.
+   */
+  --ease-mola: linear(0, 0.082, 0.243, 0.413, 0.562, 0.682, 0.774, 0.841, 0.89, 0.925, 0.949, 0.965, 0.977, 0.984, 0.99, 0.993, 0.995, 0.997, 0.998, 0.999, 1);
+  --ease-mola-impulso: linear(0, 0.082, 0.256, 0.448, 0.621, 0.76, 0.861, 0.93, 0.974, 0.999, 1.011, 1.015, 1.015, 1.013, 1.01, 1.007, 1.004, 1.003, 1.001, 1.001, 1);
+  --ease-saida: cubic-bezier(0.32, 0.72, 0, 1);
+  --duracao-toque: 120ms;
+  --duracao-estado: 220ms;
+  --duracao-mola: 600ms;
+  --duracao-mola-impulso: 700ms;
+  --duracao-entrada: 700ms;
+  --entrada-deslocamento: 14px;
+  --entrada-escalonamento: 70ms;
+}
+
+@supports not (transition-timing-function: linear(0, 1)) {
+  :root {
+    --ease-mola: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-mola-impulso: cubic-bezier(0.34, 1.3, 0.64, 1);
+  }
+}
+
+/*
+ * Com menos movimento pedido pelo sistema, nada se desloca: as durações caem a quase
+ * zero e o deslocamento de entrada vira zero. Transições de cor continuam curtas.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duracao-mola: 1ms;
+    --duracao-mola-impulso: 1ms;
+    --duracao-entrada: 1ms;
+    --entrada-deslocamento: 0px;
+    --entrada-escalonamento: 0ms;
+  }
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--entrada-deslocamento), 0);
+  }
+}
+
+/*
+ * Campo vinho: fundo sólido das áreas de destaque sem foto (portão +18, página
+ * institucional). É uma superfície chapada da paleta. Gradiente é proibido na vitrine
+ * inteira: nada de luz, brilho, véu em degradê ou borda esmaecida por máscara.
+ */
+@utility campo-vinho {
+  background-color: var(--muted);
+}
+
+/*
+ * Entrada de um bloco na primeira pintura. `--ordem` (0, 1, 2...) escalona irmãos.
+ * O estado final é o natural do elemento: se a animação não rodar, ele já está lá.
+ */
+@utility entrada {
+  animation: entrar var(--duracao-entrada) var(--ease-mola) both;
+  animation-delay: calc(var(--ordem, 0) * var(--entrada-escalonamento));
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/*
+ * Revelar ao rolar: o bloco sobe e aparece conforme entra na tela, preso à rolagem
+ * (sem ouvinte de scroll). Navegador sem suporte mostra o bloco parado, já visível.
+ */
+@utility revelar {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: entrar linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+  }
+}
+
+/* Retorno imediato ao toque: afunda no pressionar, volta com a mola ao soltar. */
+@utility pressionavel {
+  transition:
+    transform var(--duracao-mola) var(--ease-mola),
+    background-color var(--duracao-estado) var(--ease-saida),
+    border-color var(--duracao-estado) var(--ease-saida),
+    color var(--duracao-estado) var(--ease-saida);
+
+  &:active {
+    transform: scale(0.97);
+    transition-duration: var(--duracao-toque), var(--duracao-estado), var(--duracao-estado), var(--duracao-estado);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:active {
+      transform: none;
+    }
+  }
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 40%, transparent);
+  color: var(--foreground);
 }
 
 @utility focus-ring {
   &:focus-visible {
-    outline: 2px solid var(--primary);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 }

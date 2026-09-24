@@ -6,11 +6,37 @@ const store: Store = {
   description:
     "Template visual neutro de loja. Todo o conteúdo desta página é de demonstração.",
   hero: {
-    title: "Título de destaque da loja",
-    subtitle:
-      "Área opcional para uma mensagem principal, campanha ou coleção em evidência.",
-    actionLabel: "Ver produtos",
-    actionHref: "/loja/demo/categoria/exemplo",
+    slides: [
+      {
+        id: "destaque-1",
+        title: "Título de destaque da loja",
+        subtitle:
+          "Área opcional para uma mensagem principal, campanha ou coleção em evidência.",
+        actionLabel: "Ver produtos",
+        actionHref: "/categoria/exemplo",
+      },
+      {
+        id: "destaque-2",
+        title: "Segundo banner de exemplo",
+        subtitle: "Cada banner leva a uma categoria, coleção ou produto específico.",
+        actionLabel: "Ver acessórios",
+        actionHref: "/categoria/acessorios",
+      },
+      {
+        id: "destaque-3",
+        title: "Terceiro banner de exemplo",
+        subtitle: "A ordem dos banners é definida no painel.",
+        actionLabel: "Ver novidades",
+        actionHref: "/categoria/casa",
+      },
+    ],
+    contactLabel: "Falar no WhatsApp",
+    contactHref: "https://wa.me/5511999999999",
+    highlights: [
+      "Embalagem discreta",
+      "Envio para todo o Brasil",
+      "Atendimento pelo WhatsApp",
+    ],
   },
 };
 
@@ -78,7 +104,7 @@ const cartItems: CartItem[] = [
   {
     id: "produto-exemplo-M-Preto",
     name: "Produto exemplo 01",
-    href: "/loja/demo/produto/produto-exemplo",
+    href: "/produto/produto-exemplo",
     unitPrice: 5192,
     quantity: 2,
     variantLabel: "Tamanho M · Cor Preto",
@@ -86,7 +112,7 @@ const cartItems: CartItem[] = [
   {
     id: "produto-exemplo-2-G-Branco",
     name: "Produto exemplo 02",
-    href: "/loja/demo/produto/produto-exemplo-2",
+    href: "/produto/produto-exemplo-2",
     unitPrice: 7990,
     quantity: 1,
     variantLabel: "Tamanho G · Cor Branco",

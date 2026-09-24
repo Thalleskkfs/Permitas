@@ -12,15 +12,22 @@ export function ProductVariants({ groups, selected, onChange }: ProductVariantsP
   if (groups.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       {groups.map((group) => (
-        <fieldset key={group.name} className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-medium">
+        <fieldset key={group.name} className="flex flex-col">
+          <legend className="mb-3 text-sm font-medium">
             {group.name}
             {selected[group.name] && (
               <span className="ml-2 font-normal text-muted-foreground">{selected[group.name]}</span>
             )}
           </legend>
+          {/*
+            Pílulas de 48px de altura e no mínimo 56px de largura: alvo folgado mesmo em
+            rótulos de uma letra. A escolhida usa o rosé ("aqui você está"): contorno de
+            2px e um véu rosé leve. A diferença de espessura do contorno vale sem cor.
+            Opção esgotada fica riscada e apagada, e continua lida pelo leitor de tela
+            como indisponível (o rádio está desabilitado).
+          */}
           <div className="flex flex-wrap gap-2">
             {group.options.map((option) => (
               <label key={option.value} className="relative">
@@ -33,7 +40,7 @@ export function ProductVariants({ groups, selected, onChange }: ProductVariantsP
                   onChange={() => onChange(group.name, option.value)}
                   className="peer sr-only"
                 />
-                <span className="flex min-w-12 cursor-pointer items-center justify-center rounded-md border border-border px-3 py-2 text-sm hover:border-foreground peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary peer-disabled:cursor-not-allowed peer-disabled:text-muted-foreground peer-disabled:line-through peer-disabled:hover:border-border">
+                <span className="pressionavel flex min-h-12 min-w-14 cursor-pointer items-center justify-center rounded-full border border-control-border px-5 text-[0.9375rem] text-foreground hover:border-foreground peer-checked:border-accent peer-checked:bg-accent/12 peer-checked:font-medium peer-checked:ring-1 peer-checked:ring-accent peer-checked:ring-inset peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring peer-disabled:cursor-not-allowed peer-disabled:border-border peer-disabled:text-muted-foreground peer-disabled:line-through peer-disabled:hover:border-border">
                   {option.value}
                 </span>
               </label>

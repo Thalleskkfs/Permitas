@@ -8,6 +8,7 @@ export type DashboardIconName =
   | "inbox"
   | "users"
   | "palette"
+  | "image"
   | "settings";
 
 export type DashboardNavItem = {
@@ -24,12 +25,12 @@ export const DASHBOARD_NAV: DashboardNavItem[] = [
   { href: "/admin/tags", label: "Tags", icon: "tag" },
   { href: "/admin/colecoes", label: "Coleções", icon: "layers" },
   { href: "/admin/estoque", label: "Estoque", icon: "box" },
-  { href: "/admin/pedidos", label: "Solicitações", icon: "inbox" },
-  { href: "/admin/clientes", label: "Clientes", icon: "users" },
+  // Sem "Solicitações" nem "Clientes": a venda acontece inteira no WhatsApp e não há
+  // conta de cliente, então não existe de onde vir pedido ou cadastro de comprador.
 ];
 
 export const DASHBOARD_NAV_SECONDARY: DashboardNavItem[] = [
-  { href: "/admin/aparencia", label: "Aparência", icon: "palette" },
+  { href: "/admin/banners", label: "Banners", icon: "image" },
   { href: "/admin/configuracoes", label: "Configurações", icon: "settings" },
 ];
 

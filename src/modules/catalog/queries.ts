@@ -46,7 +46,7 @@ export async function listProducts(storeId: string, query: ProductQuery): Promis
 
   let request = supabase
     .from("products")
-    .select(`${PRODUCT_COLUMNS}, product_images(id, alt_text, position)`, { count: "exact" })
+    .select(`${PRODUCT_COLUMNS}, product_images(id, alt_text, position, storage_path)`, { count: "exact" })
     .eq("store_id", storeId);
 
   if (query.status !== "all") request = request.eq("status", query.status);
@@ -82,7 +82,7 @@ export async function getProduct(storeId: string, productId: string) {
     .from("products")
     .select(
       `${PRODUCT_COLUMNS},
-       product_images(id, alt_text, position),
+       product_images(id, alt_text, position, storage_path),
        product_variants(id, name, sku, price_cents, stock, active, position, options),
        product_tags(tag_id),
        collection_products(collection_id)`,
@@ -212,7 +212,7 @@ export async function listRecentProducts(storeId: string, limit: number) {
 
   const { data, error } = await supabase
     .from("products")
-    .select(`${PRODUCT_COLUMNS}, product_images(id, alt_text, position)`)
+    .select(`${PRODUCT_COLUMNS}, product_images(id, alt_text, position, storage_path)`)
     .eq("store_id", storeId)
     .order("created_at", { ascending: false })
     .limit(limit);

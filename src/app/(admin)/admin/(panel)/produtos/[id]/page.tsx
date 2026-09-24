@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 import { DashboardContainer } from "@/components/dashboard/DashboardContainer";
 import { FormSection } from "@/components/dashboard/FormSection";
+import { ImageUploader } from "@/components/dashboard/ImageUploader";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { ProductForm } from "@/components/dashboard/ProductForm";
 import { ProductStatusBadge } from "@/components/dashboard/StatusBadge";
 import { VariantsEditor } from "@/components/dashboard/VariantsEditor";
 import { requireCurrentStore } from "@/lib/auth/current-store";
 import { canDeleteStructures } from "@/modules/catalog/authorization";
+import { withProductPreviews } from "@/modules/catalog/actions";
 import { getProduct, listCategoryTree, listCollections, listTags } from "@/modules/catalog/queries";
 
 export default async function EditarProdutoPage({ params }: PageProps<"/admin/produtos/[id]">) {
@@ -16,6 +18,7 @@ export default async function EditarProdutoPage({ params }: PageProps<"/admin/pr
   // A consulta é restrita à loja autorizada: um id de outra loja não retorna nada.
   const product = await getProduct(store.storeId, id);
   if (!product) notFound();
+  const [comPrevia] = await withProductPreviews([product]);
 
   const [categories, tags, collections] = await Promise.all([
     listCategoryTree(store.storeId),
@@ -32,6 +35,10 @@ export default async function EditarProdutoPage({ params }: PageProps<"/admin/pr
       />
 
       <ProductForm product={product} categories={categories} tags={tags} collections={collections} />
+
+      <FormSection title="Imagens" description="A primeira imagem é a principal, exibida na vitrine e nas listagens.">
+        <ImageUploader productId={product.id} initialImages={comPrevia.images} />
+      </FormSection>
 
       <FormSection title="Variantes" description="Opcional. Cada variante tem estoque próprio e preço opcional.">
         <VariantsEditor

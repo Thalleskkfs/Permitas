@@ -70,11 +70,23 @@ const newProduct = async (actor, store, slug, extra = {}) => {
 };
 
 describe("privilégios e RLS das tabelas do catálogo", () => {
-  test("anon não lê nem escreve em nenhuma tabela", async () => {
+  test("anon não escreve em tabela alguma do catálogo nem lê coluna interna", async () => {
+    // A leitura do catálogo PUBLICADO por anon passou a ser intencional — é o que faz a
+    // vitrine existir — e está provada em detalhe em public-read.test.mjs, inclusive o
+    // que não pode vazar. O que fica aqui é o que não muda em hipótese alguma: a
+    // vitrine é estritamente de leitura, e colunas internas seguem fora de alcance.
+    const privilege = async (sql) => (await rows(asSuperuser, sql))[0].ok;
     for (const table of CATALOG_TABLES) {
-      await fails(asAnon, `select * from public.${table}`, DENIED);
+      for (const op of ["INSERT", "UPDATE", "DELETE"]) {
+        assert.equal(
+          await privilege(`select has_table_privilege('anon', 'public.${table}', '${op}') as ok`),
+          false,
+          `anon ${op} ${table}`,
+        );
+      }
     }
     await fails(asAnon, `insert into public.products (store_id, name, slug, price_cents) values ('${S1}', 'x', 'x', 1)`, DENIED);
+    await fails(asAnon, `select sku from public.products`, DENIED);
   });
 
   test("usuário sem membership (C) não enxerga nada e não cria nada", async () => {
