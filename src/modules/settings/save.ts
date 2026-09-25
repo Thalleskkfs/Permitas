@@ -8,7 +8,12 @@ import {
   type ActionState,
 } from "../catalog/errors.ts";
 import { canEditStoreSettings } from "./authorization.ts";
-import { storeSettingsInputSchema, type StoreSettingsInput } from "./schemas.ts";
+import {
+  storeDescriptionInputSchema,
+  storeSettingsInputSchema,
+  type StoreDescriptionInput,
+  type StoreSettingsInput,
+} from "./schemas.ts";
 
 /**
  * Gravação das configurações da loja, sem depender de Next nem de cookies.
@@ -109,6 +114,46 @@ async function writeSettings(
     .insert({ store_id: storeId, ...values });
 
   return insertError ? toSettingsErrorMessage(insertError) : null;
+}
+
+export type StoreDescriptionActionState = ActionState & {
+  saved?: { storeDescription: string | null };
+};
+
+/**
+ * Descrição da loja (`stores.description`): o texto que vira `<meta description>` e o
+ * resumo do cartão de prévia do WhatsApp/Instagram em toda página da vitrine. Tabela
+ * diferente da do resto deste arquivo (`stores`, não `store_settings`), mas a mesma regra
+ * de quem grava — só o owner, como toda configuração da loja.
+ */
+export async function saveStoreDescription(
+  deps: SaveStoreSettingsDeps,
+  values: StoreDescriptionInput,
+): Promise<StoreDescriptionActionState> {
+  const parsed = storeDescriptionInputSchema.safeParse(values);
+  if (!parsed.success) {
+    return actionError(SETTINGS_MESSAGES.invalidInput, toFieldErrors(parsed.error.issues));
+  }
+
+  const store = await deps.getStore();
+  if (!canEditStoreSettings(store.role)) return actionError(SETTINGS_MESSAGES.notAllowed);
+
+  const supabase = await deps.getClient();
+  const { data, error } = await supabase
+    .from("stores")
+    .update({ description: parsed.data.storeDescription })
+    .eq("id", store.storeId)
+    .select("id");
+
+  if (error) return actionError(toSettingsErrorMessage(error));
+  // A policy stores_update_owner é quem decide de fato: sem linha afetada, ela recusou.
+  if (!data || data.length === 0) return actionError(SETTINGS_MESSAGES.notAllowed);
+
+  return {
+    status: "success",
+    message: SETTINGS_MESSAGES.saved,
+    saved: { storeDescription: parsed.data.storeDescription },
+  };
 }
 
 function toSettingsErrorMessage(error: { code?: string; message?: string }) {

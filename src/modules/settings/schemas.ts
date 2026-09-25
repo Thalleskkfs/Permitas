@@ -119,3 +119,33 @@ export type StoreSettingsInput = z.output<typeof storeSettingsInputSchema>;
 
 /** Mesmo limite da constraint store_settings_about_text_length. */
 export const ABOUT_TEXT_MAX = 600;
+
+/**
+ * Bem mais curto que o limite do banco (stores_description_length, 2000 caracteres):
+ * é o texto que vira <meta description> e o resumo do cartão de prévia do
+ * WhatsApp/Instagram — passar de ~160 caracteres é onde o Google já corta a frase.
+ */
+export const STORE_DESCRIPTION_MAX = 200;
+
+const storeDescriptionField = z
+  .string()
+  .default("")
+  .transform((value, ctx) => {
+    const normalized = normalizeLineBreaks(value).trim();
+    if (normalized === "") return null;
+
+    if (templateLength(normalized) > STORE_DESCRIPTION_MAX) {
+      ctx.addIssue({
+        code: "custom",
+        message: `Use até ${STORE_DESCRIPTION_MAX} caracteres.`,
+      });
+      return z.NEVER;
+    }
+    return normalized;
+  });
+
+export const storeDescriptionInputSchema = z.object({
+  storeDescription: storeDescriptionField,
+});
+
+export type StoreDescriptionInput = z.output<typeof storeDescriptionInputSchema>;

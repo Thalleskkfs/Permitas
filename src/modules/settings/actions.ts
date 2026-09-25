@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { requireCurrentStore } from "@/lib/auth/current-store";
 import { createClient } from "@/lib/supabase/server";
-import { saveStoreSettings, type SettingsActionState } from "./save";
+import {
+  saveStoreDescription,
+  saveStoreSettings,
+  type SettingsActionState,
+  type StoreDescriptionActionState,
+} from "./save";
 
 /**
  * Server Action da tela Configurações.
@@ -27,6 +32,28 @@ export async function saveStoreSettingsAction(
   if (result.status === "success") {
     revalidatePath("/admin/configuracoes");
     // O botão de compra da vitrine depende do número: todas as páginas da loja mudam.
+    revalidatePath("/(storefront)", "layout");
+  }
+
+  return result;
+}
+
+/**
+ * Descrição da loja: aparece em toda página da vitrine (`<meta description>`, cartão de
+ * prévia do WhatsApp/Instagram), por isso invalida o layout inteiro, como o número de
+ * WhatsApp acima.
+ */
+export async function saveStoreDescriptionAction(
+  _prev: StoreDescriptionActionState,
+  formData: FormData,
+): Promise<StoreDescriptionActionState> {
+  const result = await saveStoreDescription(
+    { getStore: requireCurrentStore, getClient: createClient },
+    { storeDescription: String(formData.get("storeDescription") ?? "") },
+  );
+
+  if (result.status === "success") {
+    revalidatePath("/admin/configuracoes");
     revalidatePath("/(storefront)", "layout");
   }
 
