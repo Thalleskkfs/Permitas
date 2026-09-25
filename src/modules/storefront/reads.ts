@@ -145,7 +145,7 @@ export async function getStore(client: StorefrontClient, storeSlug: string): Pro
   const { data, error } = await client
     .from("stores")
     .select(
-      `${STORE_COLUMNS}, store_settings(whatsapp_number, whatsapp_message_template), store_banners(id, title, subtitle, cta_label, cta_href, image_path, image_path_mobile, image_alt, position)`,
+      `${STORE_COLUMNS}, store_settings(whatsapp_number, whatsapp_message_template, about_image_path, about_image_alt, about_text), store_banners(id, title, subtitle, cta_label, cta_href, image_path, image_path_mobile, image_alt, position)`,
     )
     .eq("slug", storeSlug)
     .eq("active", true)

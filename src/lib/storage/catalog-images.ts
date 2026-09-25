@@ -115,6 +115,9 @@ export const uploadBannerImage = operations.uploadBannerImage;
 export const removeBannerImage = operations.removeBannerImage;
 export const createBannerImageSignedUrl = operations.createBannerImageSignedUrl;
 export const createCatalogImageSignedUrls = operations.createCatalogImageSignedUrls;
+export const uploadAboutImage = operations.uploadAboutImage;
+export const removeAboutImage = operations.removeAboutImage;
+export const createAboutImageSignedUrl = operations.createAboutImageSignedUrl;
 
 /**
  * Leitura para a rota pública de imagens.
@@ -131,16 +134,17 @@ export const readPublicImage = createPublicImageReader({
     // Consultas separadas com `.eq`, e não um `.or()` montado com o caminho: o valor vem
     // da URL, e texto interpolado num filtro do PostgREST é superfície de injeção mesmo
     // com o caminho já validado antes.
-    const [images, banners, mobileBanners] = await Promise.all([
+    const [images, banners, mobileBanners, about] = await Promise.all([
       visitor.from("product_images").select("id").eq("storage_path", path).limit(1),
       visitor.from("store_banners").select("id").eq("image_path", path).limit(1),
       visitor.from("store_banners").select("id").eq("image_path_mobile", path).limit(1),
+      visitor.from("store_settings").select("store_id").eq("about_image_path", path).limit(1),
     ]);
 
-    for (const result of [images, banners, mobileBanners]) {
+    for (const result of [images, banners, mobileBanners, about]) {
       if (result.error) throw new Error(`Falha ao verificar a imagem: ${result.error.message}`);
     }
-    return [images, banners, mobileBanners].some((result) => (result.data?.length ?? 0) > 0);
+    return [images, banners, mobileBanners, about].some((result) => (result.data?.length ?? 0) > 0);
   },
 
   async downloadObject(path) {

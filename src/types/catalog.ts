@@ -80,11 +80,18 @@ export type StoreHero = {
   highlights?: string[];
 };
 
+/** Seção "Sobre nós", acima do carrossel de banners. Sem foto ou sem texto, não existe. */
+export type StoreAbout = {
+  image: { src: string; alt: string };
+  text: string;
+};
+
 export type Store = {
   slug: string;
   name: string;
   description?: string;
   hero?: StoreHero;
+  about?: StoreAbout;
   /**
    * Canal de atendimento, cru como está no banco.
    *

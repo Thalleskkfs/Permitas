@@ -210,9 +210,7 @@ function Carrossel({ slides, lateral }: StoreHero & { lateral?: React.ReactNode 
           // `offsetLeft` de cada um incluiria a margem lateral, e o giro pararia torto.
           // Os cantos arredondados ficam aqui, na moldura, e não em cada arte: é o trilho
           // que recorta a área visível, então durante a troca as bordas continuam curvas.
-          className={`relative flex snap-x snap-mandatory overflow-x-auto rounded-b-2xl md:rounded-b-3xl overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
-            emGrade ? "lg:rounded-3xl" : ""
-          }`}
+          className="relative flex snap-x snap-mandatory overflow-x-auto rounded-2xl overscroll-x-contain [scrollbar-width:none] md:rounded-3xl [&::-webkit-scrollbar]:hidden"
         >
           {slides.map((slide, indice) => (
             <Banner
@@ -222,7 +220,6 @@ function Carrossel({ slides, lateral }: StoreHero & { lateral?: React.ReactNode 
               total={slides.length}
               isFirstDesktop={indice === 0}
               prioritario={indice === 0}
-              indice={indice}
               emGrade={emGrade}
             />
           ))}
@@ -304,7 +301,6 @@ function Banner({
   total,
   isFirstDesktop,
   prioritario,
-  indice,
   emGrade,
 }: {
   slide: HeroSlide;
@@ -312,11 +308,10 @@ function Banner({
   total: number;
   isFirstDesktop: boolean;
   prioritario: boolean;
-  indice: number;
   emGrade: boolean;
 }) {
   const arte = (
-    <Arte slide={slide} prioritario={prioritario} isFirstDesktop={isFirstDesktop} indice={indice} emGrade={emGrade} />
+    <Arte slide={slide} prioritario={prioritario} isFirstDesktop={isFirstDesktop} emGrade={emGrade} />
   );
 
   return (
@@ -349,21 +344,17 @@ function Banner({
  * para o banner não tomar a tela toda; o recorte leva só as sobras de cima e de baixo. Tablet: uma faixa baixa e larga
  * (16:5). Desktop com produtos ao lado: um quadro 16:10 com os quatro cantos arredondados,
  * perto da proporção da arte (16:9), então quase nada dela é cortado. A arte fica centrada
- * um pouco acima do meio, onde o designer pôs a marca. Colada no cabeçalho (celular e
- * tablet), o fade do topo funde a arte com ele; no desktop em grade ela não encosta no
- * cabeçalho e o fade sai.
+ * um pouco acima do meio, onde o designer pôs a marca.
  */
 function Arte({
   slide,
   prioritario,
   isFirstDesktop,
-  indice,
   emGrade,
 }: {
   slide: HeroSlide;
   prioritario: boolean;
   isFirstDesktop: boolean;
-  indice: number;
   emGrade: boolean;
 }) {
   const alt = (slide.imageMobile ?? slide.image)?.alt ?? "";
@@ -380,18 +371,7 @@ function Arte({
   const base = celular ?? desktop;
   if (!base) return null;
 
-  // Banner 0 (Permita-se) no desktop: mostra mais o topo da imagem (55,5%)
-    // para melhor enquadramento das mãos. Demais banners: posição padrão (40%).
-    const objectPosition = isFirstDesktop
-      ? indice === 0
-        ? "50% 20%" // Banner 0: parte superior
-        : "50% 50%" // Banner 1 e 2: meio
-      : "50% 40%"; // Mobile: posição padrão
-
-  // Na grade do desktop o quadro 16:10 corta as laterais da arte 12:5 do banner 0; com o
-  // corte no meio, a logo encostava na borda direita. Puxar o recorte para a direita dá
-  // folga a ela. Só vale a partir de lg; celular e tablet seguem com a posição acima.
-  const posicaoNaGrade = emGrade && indice === 0 ? "72% 50%" : objectPosition;
+  const objectPosition = isFirstDesktop ? "50% 50%" : "50% 40%"; // Desktop: meio. Mobile: posição padrão.
 
   return (
     <div
@@ -404,17 +384,10 @@ function Arte({
         {/* eslint-disable-next-line jsx-a11y/alt-text -- o alt vem em `base` */}
         <img
           {...base}
-          className="absolute inset-0 size-full object-cover [object-position:var(--posicao)] lg:[object-position:var(--posicao-lg)]"
-          style={{ "--posicao": objectPosition, "--posicao-lg": posicaoNaGrade } as React.CSSProperties}
+          className="absolute inset-0 size-full object-cover [object-position:var(--posicao)]"
+          style={{ "--posicao": objectPosition } as React.CSSProperties}
         />
       </picture>
-      {/* Fade no topo: a arte se funde com o fundo logo abaixo do cabeçalho. */}
-      <div
-        aria-hidden
-        className={`pointer-events-none absolute inset-x-0 top-0 h-20 bg-linear-to-b from-background to-transparent md:h-24 lg:h-16 ${
-          emGrade ? "lg:hidden" : ""
-        }`}
-      />
     </div>
   );
 }

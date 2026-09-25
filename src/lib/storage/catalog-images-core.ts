@@ -174,6 +174,44 @@ export function createCatalogImageOperations(deps: CatalogImageOperationsDeps) {
     },
 
     /**
+     * Foto da seção "Sobre nós", uma por loja. Mesma convenção de path das demais
+     * imagens do catálogo, usando o próprio store_id como "entidade" (a seção não tem
+     * id além do da loja): {store_id}/{store_id}/{arquivo}.
+     */
+    async uploadAboutImage({
+      storeId,
+      contentType,
+      body,
+    }: {
+      storeId: string;
+      contentType: CatalogImageMimeType;
+      body: CatalogImageBody;
+    }) {
+      await deps.requireStoreAccess(storeId, "storage:write");
+
+      const path = buildCatalogImagePath({
+        storeId,
+        productId: storeId,
+        filename: generateCatalogImageFilename(contentType),
+      });
+
+      await deps.uploadObject(path, body, contentType);
+      return { path };
+    },
+
+    async removeAboutImage({ storeId, path }: { storeId: string; path: string }) {
+      await deps.requireStoreAccess(storeId, "storage:delete");
+
+      const location = parseCatalogImagePath(path);
+      if (!location) throw new Error("Path fora da convenção do catálogo.");
+      if (location.storeId !== storeId || location.productId !== storeId) {
+        throw new Error("Path pertence a outra loja.");
+      }
+
+      await deps.removeObject(path);
+    },
+
+    /**
      * URLs temporárias de várias fotos de produto, para as prévias do painel (produto em
      * rascunho não é servido pela rota pública). Uma checagem de acesso para o lote; o
      * caminho de outra loja ou de produto que não é da loja fica de fora, sem erro.
@@ -225,6 +263,27 @@ export function createCatalogImageOperations(deps: CatalogImageOperationsDeps) {
       if (location.storeId !== storeId) throw new Error("Path pertence a outra loja.");
 
       await assertBanner(storeId, location.productId);
+      return deps.createSignedUrl(path, expiresInSeconds);
+    },
+
+    /** URL temporária da foto de "Sobre nós", para a prévia no painel. */
+    async createAboutImageSignedUrl({
+      storeId,
+      path,
+      expiresInSeconds = 60,
+    }: {
+      storeId: string;
+      path: string;
+      expiresInSeconds?: number;
+    }) {
+      await deps.requireStoreAccess(storeId, "storage:read");
+
+      const location = parseCatalogImagePath(path);
+      if (!location) throw new Error("Path fora da convenção do catálogo.");
+      if (location.storeId !== storeId || location.productId !== storeId) {
+        throw new Error("Path pertence a outra loja.");
+      }
+
       return deps.createSignedUrl(path, expiresInSeconds);
     },
 

@@ -38,6 +38,14 @@
   --whatsapp: #25d366; /* verde original do WhatsApp */
   --whatsapp-foreground: #110b0e;
   --radius: 0.5rem;
+
+  /*
+   * Degradê do fundo da vitrine — a mesma arte de fundo do logo oficial da marca
+   * (perfil/redes), pedida pelo cliente com referência exata. É a ÚNICA exceção à
+   * regra abaixo: nenhum outro brilho, véu ou borda esmaecida entra na vitrine.
+   */
+  --fundo-degrade-topo: #3f0615;
+  --fundo-degrade-base: #75162c;
 }
 
 @theme inline {
@@ -55,6 +63,10 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-accent: var(--accent);
   --color-ring: var(--ring);
+  /* Vermelho da marca (mesmo tom da base do degradê de fundo) para o cabeçalho e a
+     barra lateral do celular — registrado aqui, e não usado cru, para suportar a
+     opacidade das classes bg-chrome/NN como qualquer outra cor do tema. */
+  --color-chrome: var(--fundo-degrade-base);
   --color-whatsapp: var(--whatsapp);
   --color-whatsapp-foreground: var(--whatsapp-foreground);
   --radius-sm: calc(var(--radius) - 4px);
@@ -145,7 +157,10 @@
 /*
  * Campo vinho: fundo sólido das áreas de destaque sem foto (portão +18, página
  * institucional). É uma superfície chapada da paleta. Gradiente é proibido na vitrine
- * inteira: nada de luz, brilho, véu em degradê ou borda esmaecida por máscara.
+ * inteira: nada de luz, brilho, véu em degradê ou borda esmaecida por máscara — com duas
+ * exceções, ambas pedidas pela cliente: o fundo da página (ver `body::before` no fim deste
+ * arquivo) e a foto do "Sobre nós", que se apaga por máscara justamente para deixar esse
+ * fundo aparecer (um véu de cor chapada não casa com um degradê fixo à janela).
  */
 @utility campo-vinho {
   background-color: var(--muted);
@@ -211,7 +226,34 @@
 }
 
 body {
+  position: relative;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/*
+ * Degradê do fundo, só na VITRINE (não no painel /admin — `[data-storefront]` existe
+ * apenas no layout da loja). Fixo à janela, não à página: pseudo-elemento
+ * `position: fixed` atrás de tudo, em vez de `background-attachment: fixed` no body —
+ * mais confiável no Safari do iPhone, que historicamente trava/pisca o fundo fixo
+ * durante a rolagem. `--background` continua igual em todo o resto (cabeçalho,
+ * diálogos, cartões): só o canto vazio da página passa a mostrar o degradê por trás.
+ */
+body:has([data-storefront])::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: linear-gradient(to bottom, var(--fundo-degrade-topo), var(--fundo-degrade-base));
+}
+
+/*
+ * A borda `--border` (vinho acinzentado) foi calibrada para o fundo quase-preto de
+ * antes: sobre o vermelho saturado, a linha entre seções ficava um traço escuro e sujo.
+ * Só na vitrine, a mesma variável vira um traço branco translúcido — todo `border-border`
+ * (cabeçalho, rodapé, divisórias de seção) muda junto, sem tocar em cada componente.
+ */
+[data-storefront] {
+  --border: color-mix(in oklab, white 30%, transparent);
 }

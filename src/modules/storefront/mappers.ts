@@ -5,6 +5,7 @@ import type {
   HeroSlide,
   ProductImage,
   Store,
+  StoreAbout,
   VariantGroup,
 } from "../../types/catalog.ts";
 import type { StorefrontPaths } from "../../lib/storefront-paths.ts";
@@ -32,6 +33,9 @@ const WHATSAPP_LABEL = "Falar no WhatsApp";
 export type StoreSettingsRow = {
   whatsapp_number: string | null;
   whatsapp_message_template: string | null;
+  about_image_path?: string | null;
+  about_image_alt?: string | null;
+  about_text?: string | null;
 };
 
 export type StoreRow = {
@@ -156,6 +160,15 @@ function toContact(settings: StoreSettingsRow | null) {
   return { contactLabel: WHATSAPP_LABEL, contactHref: `https://wa.me/${number}` };
 }
 
+/** Só existe com foto E texto: metade da seção sozinha não é publicável. */
+function toAbout(settings: StoreSettingsRow | null, storeName: string): StoreAbout | undefined {
+  const text = settings?.about_text?.trim();
+  const src = imageSrc(settings?.about_image_path);
+  if (!text || !src) return undefined;
+
+  return { image: { src, alt: settings?.about_image_alt ?? storeName }, text };
+}
+
 function toSlides(rows: BannerRow[] | null | undefined): HeroSlide[] | null {
   if (!rows || rows.length === 0) return null;
 
@@ -190,6 +203,7 @@ export function toStore(row: StoreRow): Store {
       slides: toSlides(row.store_banners) ?? [{ id: row.id, title: row.name, subtitle: description }],
       ...toContact(settings),
     },
+    about: toAbout(settings, row.name),
     // Crus, sem normalizar: quem monta a mensagem do carrinho precisa do original.
     whatsappNumber: settings?.whatsapp_number ?? null,
     whatsappMessageTemplate: settings?.whatsapp_message_template ?? null,

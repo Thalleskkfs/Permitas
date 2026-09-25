@@ -502,6 +502,9 @@ export type Database = {
           whatsapp_message_template: string | null
           created_at: string
           updated_at: string
+          about_image_path: string | null
+          about_image_alt: string | null
+          about_text: string | null
         }
         Insert: {
           store_id: string
@@ -509,6 +512,9 @@ export type Database = {
           whatsapp_message_template?: string | null
           created_at?: string
           updated_at?: string
+          about_image_path?: string | null
+          about_image_alt?: string | null
+          about_text?: string | null
         }
         Update: {
           store_id?: string
@@ -516,6 +522,9 @@ export type Database = {
           whatsapp_message_template?: string | null
           created_at?: string
           updated_at?: string
+          about_image_path?: string | null
+          about_image_alt?: string | null
+          about_text?: string | null
         }
         Relationships: [
           {
