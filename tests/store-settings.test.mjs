@@ -139,7 +139,7 @@ describe("fiação da tela", () => {
     assert.match(source, /getStore: requireCurrentStore/);
     assert.match(source, /getClient: createClient/);
     const fields = [...source.matchAll(/formData\.get\("([^"]+)"\)/g)].map((match) => match[1]);
-    assert.deepEqual(fields, ["whatsappNumber", "whatsappMessageTemplate"]);
+    assert.deepEqual(fields, ["whatsappNumber", "whatsappMessageTemplate", "storeDescription"]);
     assert.doesNotMatch(source, /formData\.getAll|Object\.fromEntries/);
     assert.doesNotMatch(source, /SERVICE_ROLE|serviceRole|createAdminClient/);
   });

@@ -4,6 +4,7 @@ import { DashboardContainer } from "@/components/dashboard/DashboardContainer";
 import { FormSection } from "@/components/dashboard/FormSection";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/dashboard/StatusBadge";
+import { StoreProfileForm } from "@/components/dashboard/StoreProfileForm";
 import { WhatsAppSettingsForm } from "@/components/dashboard/WhatsAppSettingsForm";
 import { buttonClass } from "@/components/dashboard/ui";
 import { requireCurrentStore } from "@/lib/auth/current-store";
@@ -31,19 +32,12 @@ export default async function ConfiguracoesPage() {
         description="Canal de atendimento da loja: para onde vão os pedidos da vitrine."
       />
 
-      <FormSection title="Loja" description="Identificação da loja.">
-        <dl className="grid gap-4 rounded-md border border-border p-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-0.5">
-            <dt className="text-xs text-muted-foreground">Nome</dt>
-            <dd className="text-sm font-medium">{settings.storeName}</dd>
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <dt className="text-xs text-muted-foreground">Endereço da vitrine</dt>
-            <dd className="text-sm font-medium">{siteUrl ?? "Não configurado"}</dd>
-          </div>
-        </dl>
-        <p className="text-xs text-muted-foreground">Edição dos dados da loja: em breve.</p>
-      </FormSection>
+      <StoreProfileForm
+        storeName={settings.storeName}
+        siteUrl={siteUrl}
+        initialDescription={settings.storeDescription}
+        canEdit={canEditStoreSettings(store.role)}
+      />
 
       <WhatsAppSettingsForm
         storeName={settings.storeName}

@@ -16,6 +16,7 @@ import { createClient } from "@/lib/supabase/server";
 export type StoreSettingsView = {
   storeName: string;
   storeSlug: string;
+  storeDescription: string | null;
   whatsappNumber: string | null;
   whatsappMessageTemplate: string | null;
   aboutText: string | null;
@@ -26,7 +27,7 @@ export async function getStoreSettings(storeId: string): Promise<StoreSettingsVi
   const supabase = await createClient();
 
   const [{ data: store }, { data: settings }] = await Promise.all([
-    supabase.from("stores").select("name, slug").eq("id", storeId).maybeSingle(),
+    supabase.from("stores").select("name, slug, description").eq("id", storeId).maybeSingle(),
     supabase
       .from("store_settings")
       .select("whatsapp_number, whatsapp_message_template, about_text, about_image_path")
@@ -40,6 +41,7 @@ export async function getStoreSettings(storeId: string): Promise<StoreSettingsVi
   return {
     storeName: store.name,
     storeSlug: store.slug,
+    storeDescription: store.description ?? null,
     whatsappNumber: settings?.whatsapp_number ?? null,
     whatsappMessageTemplate: settings?.whatsapp_message_template ?? null,
     aboutText: settings?.about_text ?? null,

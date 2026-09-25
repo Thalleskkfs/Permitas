@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { A, B, C, D, S1, S2, asSuperuser, asUser, setupDatabase } from "../supabase/tests/support/harness.mjs";
 import { canEditStoreSettings, settingsRoleAllows } from "../src/modules/settings/authorization.ts";
-import { SETTINGS_MESSAGES, saveStoreSettings } from "../src/modules/settings/save.ts";
-import { SETTINGS_FIELD_MESSAGES } from "../src/modules/settings/schemas.ts";
+import { SETTINGS_MESSAGES, saveStoreDescription, saveStoreSettings } from "../src/modules/settings/save.ts";
+import { SETTINGS_FIELD_MESSAGES, STORE_DESCRIPTION_MAX } from "../src/modules/settings/schemas.ts";
 
 /**
  * Tela Configurações: gravação de store_settings sob RLS.
@@ -248,6 +248,76 @@ describe("salvar configurações", () => {
     assert.equal(result.status, "error");
     assert.equal(result.message, SETTINGS_MESSAGES.notAllowed);
     assert.equal(await settingsOf(S1), undefined);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Descrição da loja (public.stores.description) — mesma regra do owner, tabela
+// diferente. A migration allow_store_description_update é quem libera a coluna.
+// ---------------------------------------------------------------------------
+
+const descriptionOf = async (storeId) =>
+  (await rows(asSuperuser, `select description from public.stores where id = '${storeId}'`))[0]?.description ?? null;
+
+describe("salvar descrição da loja", () => {
+  test("owner salva e o texto sai com espaços nas pontas cortados", async () => {
+    const { deps } = depsFor(asUser(A), OWNER_S1);
+    const result = await saveStoreDescription(deps, { storeDescription: "  Lubrificantes e géis, discreto. " });
+
+    assert.equal(result.status, "success", result.message);
+    assert.deepEqual(result.saved, { storeDescription: "Lubrificantes e géis, discreto." });
+    assert.equal(await descriptionOf(S1), "Lubrificantes e géis, discreto.");
+    assert.equal(await descriptionOf(S2), null, "a outra loja não muda");
+  });
+
+  test("campo vazio grava null (volta ao texto padrão do código)", async () => {
+    const { deps } = depsFor(asUser(A), OWNER_S1);
+    const result = await saveStoreDescription(deps, { storeDescription: "   " });
+
+    assert.equal(result.status, "success", result.message);
+    assert.equal(await descriptionOf(S1), null);
+  });
+
+  test(`acima de ${STORE_DESCRIPTION_MAX} caracteres é recusado sem ir ao banco`, async () => {
+    const { deps, calls, client } = depsFor(asUser(A), OWNER_S1);
+    const result = await saveStoreDescription(deps, { storeDescription: "x".repeat(STORE_DESCRIPTION_MAX + 1) });
+
+    assert.equal(result.status, "error");
+    assert.ok(result.fieldErrors.storeDescription);
+    assert.deepEqual(calls, { getStore: 0, getClient: 0 });
+    assert.deepEqual(client.log, []);
+    assert.equal(await descriptionOf(S1), null);
+  });
+
+  test("editor é barrado pela aplicação antes de abrir o cliente do banco", async () => {
+    const { deps, calls, client } = depsFor(asUser(D), EDITOR_S1);
+    const result = await saveStoreDescription(deps, { storeDescription: "Tentativa de editor" });
+
+    assert.equal(result.status, "error");
+    assert.equal(result.message, SETTINGS_MESSAGES.notAllowed);
+    assert.equal(calls.getClient, 0, "a checagem de papel vem antes do banco");
+    assert.deepEqual(client.log, []);
+    assert.equal(await descriptionOf(S1), null);
+  });
+
+  test("editor que passe pela aplicação é barrado pela RLS", async () => {
+    const { deps, client } = depsFor(asUser(D), OWNER_S1);
+    const result = await saveStoreDescription(deps, { storeDescription: "Invadido" });
+
+    assert.equal(result.status, "error");
+    assert.equal(result.message, SETTINGS_MESSAGES.notAllowed);
+    assert.equal(client.log.length, 1, "tentou update (0 linhas, sem insert de fallback)");
+    assert.equal(await descriptionOf(S1), null);
+  });
+
+  test("usuário de outra loja não altera, mesmo apontando o store_id dela", async () => {
+    const { deps } = depsFor(asUser(B), OWNER_S1);
+    const result = await saveStoreDescription(deps, { storeDescription: "Invadido" });
+
+    assert.equal(result.status, "error");
+    assert.equal(result.message, SETTINGS_MESSAGES.notAllowed);
+    assert.equal(await descriptionOf(S1), null);
+    assert.equal(await descriptionOf(S2), null);
   });
 });
 
