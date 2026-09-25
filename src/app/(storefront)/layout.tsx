@@ -36,7 +36,9 @@ export default async function StorefrontLayout({
   const showAgeGate = shouldShowAgeGate((await cookies()).get(AGE_GATE_COOKIE)?.value);
 
   return (
-    <div data-storefront className="flex flex-1 flex-col bg-background text-foreground">
+    // Sem `bg-background` de propósito: o fundo vem do degradê fixo definido em
+    // globals.css (body::before), que só existe quando [data-storefront] está presente.
+    <div data-storefront className="flex flex-1 flex-col text-foreground">
       <AgeGate open={showAgeGate} termsHref={paths.institutional("termos")}>
         <StoreHeader store={store} paths={paths} categories={resumo.categories} totalDeProdutos={resumo.total} />
         <main className="flex-1">{children}</main>

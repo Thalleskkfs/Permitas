@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AboutSection } from "@/components/storefront/AboutSection";
 import { CategoryIndex } from "@/components/storefront/CategoryIndex";
 import { CategoryShelf } from "@/components/storefront/CategoryShelf";
 import type { CategoryShowcaseItem } from "@/components/storefront/CategoryShowcase";
@@ -115,6 +116,7 @@ export default async function StoreHomePage() {
         dele. Fica só para leitor de tela porque a identidade visível é o cabeçalho.
       */}
       <h1 className="sr-only">{store.name}</h1>
+      {store.about && <AboutSection about={store.about} />}
       {store.hero && <Hero {...store.hero} lateral={lateral} />}
       <div className="hidden pt-6 sm:block sm:pt-8 lg:pt-20">
         <CategoryIndex categories={categories} paths={paths} showcase={showcase} />
@@ -148,7 +150,7 @@ export default async function StoreHomePage() {
       */}
       <div className="hidden lg:block">
         {featured.length > 0 && (
-          <div className="mt-24 bg-muted py-20">
+          <div className="mt-24 bg-chrome py-20">
             <Container>
               <ProductSection
                 title="Produtos em destaque"
@@ -201,7 +203,7 @@ export default async function StoreHomePage() {
       {contato && (
         <section
           aria-labelledby="fecho-atendimento"
-          className="campo-vinho revelar hidden lg:mt-24 lg:-mb-20 lg:block"
+          className="bg-chrome revelar hidden lg:mt-24 lg:-mb-20 lg:block"
         >
           <Container className="flex items-center justify-between gap-12 py-16">
             <h2 id="fecho-atendimento" className={tituloDeVitrine}>

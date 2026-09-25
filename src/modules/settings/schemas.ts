@@ -116,3 +116,6 @@ export const storeSettingsInputSchema = z.object({
 });
 
 export type StoreSettingsInput = z.output<typeof storeSettingsInputSchema>;
+
+/** Mesmo limite da constraint store_settings_about_text_length. */
+export const ABOUT_TEXT_MAX = 600;

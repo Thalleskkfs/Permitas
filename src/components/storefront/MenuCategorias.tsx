@@ -113,7 +113,7 @@ export function MenuCategorias({
         onClick={(evento) => {
           if (evento.target === evento.currentTarget) fechar();
         }}
-        className={`fixed inset-y-0 right-auto left-0 m-0 h-dvh max-h-none w-[min(22rem,88vw)] max-w-none rounded-r-3xl border-0 border-r border-border bg-background p-0 text-foreground backdrop:bg-background/80 transition-transform duration-(--duracao-mola) ease-spring motion-reduce:transition-none ${
+        className={`fixed inset-y-0 right-auto left-0 m-0 h-dvh max-h-none w-[min(22rem,88vw)] max-w-none rounded-r-3xl border-0 border-r border-border bg-chrome p-0 text-foreground backdrop:bg-background/80 transition-transform duration-(--duracao-mola) ease-spring motion-reduce:transition-none ${
           dentro ? "translate-x-0" : "-translate-x-full"
         }`}
       >

@@ -44,7 +44,7 @@ export function StoreHeader({
   return (
     // Barra presa ao topo, de ponta a ponta: faz parte da borda de cima da tela, com só os
     // cantos de baixo arredondados. Translúcida, então o conteúdo aparece por trás ao rolar.
-    <header className="sticky top-0 z-40 rounded-b-2xl border-b border-border bg-background/90 supports-[backdrop-filter]:bg-background/75 supports-[backdrop-filter]:backdrop-blur-md sm:rounded-b-3xl [@media(prefers-reduced-transparency:reduce)]:bg-background [@media(prefers-reduced-transparency:reduce)]:backdrop-blur-none">
+    <header className="sticky top-0 z-40 rounded-b-2xl border-b border-border bg-chrome/90 supports-[backdrop-filter]:bg-chrome/75 supports-[backdrop-filter]:backdrop-blur-md sm:rounded-b-3xl [@media(prefers-reduced-transparency:reduce)]:bg-chrome [@media(prefers-reduced-transparency:reduce)]:backdrop-blur-none">
       <Container className="grid h-[5.5rem] grid-cols-[1fr_auto_1fr] items-center gap-3 sm:h-[5.5rem] lg:h-[4.5rem]">
         {/* Link, não campo: no celular um campo no cabeçalho espreme o logo. A página
             de busca tem o formulário e funciona sem JavaScript. */}
