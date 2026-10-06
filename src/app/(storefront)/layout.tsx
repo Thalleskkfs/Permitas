@@ -20,7 +20,16 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: { default: store.name, template: `%s — ${store.name}` },
-    description: store.description ?? "Plataforma de catálogo de produtos.",
+    description: store.description ?? "A Permita-se nasceu para tornar o prazer acessível, seguro e sem tabus.",
+    openGraph: {
+      title: store.name,
+      description: store.description ?? "A Permita-se nasceu para tornar o prazer acessível, seguro e sem tabus.",
+      url: process.env.NEXT_PUBLIC_SITE_URL,
+      siteName: store.name,
+      images: store.about?.image?.src
+        ? [{ url: store.about.image.src }]
+        : [{ url: "/icon-192.png" }],
+    },
   };
 }
 

@@ -106,7 +106,7 @@ export function AgeGate({
               onKeyDown={handleKeyDown}
               // No celular o texto e os botões ficam no terço de baixo, ao alcance do
               // polegar, com o logo no alto; em telas maiores o bloco se centraliza.
-              className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pt-[max(2.5rem,env(safe-area-inset-top))] pb-[max(2.5rem,env(safe-area-inset-bottom))] sm:justify-center sm:px-8"
+              className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-6 pt-[max(2.5rem,env(safe-area-inset-top))] pb-[max(2.5rem,env(safe-area-inset-bottom))] sm:justify-center sm:px-8"
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- SVG estático, sem otimização a fazer */}
               <img
@@ -119,20 +119,37 @@ export function AgeGate({
                 className="entrada h-16 w-auto self-start sm:h-20"
               />
 
-              <div className="entrada mt-auto pt-16 [--ordem:1] sm:mt-14 sm:pt-0">
+              <div className="entrada mt-auto pt-10 [--ordem:1] sm:mt-10 sm:pt-0">
                 <h2
                   id="age-gate-title"
                   className="font-display text-[length:var(--texto-titulo-1)] leading-[1.08] font-light tracking-[-0.02em] text-balance"
                 >
-                  Conteúdo para maiores de 18 anos
+                  AVISO DE CONTEÚDO ADULTO
                 </h2>
-                <p
+                <div
                   id="age-gate-description"
-                  className="mt-5 max-w-[40ch] text-base leading-[1.55] text-pretty text-muted-foreground"
+                  className="mt-5 flex flex-col gap-3 text-sm leading-[1.55] text-pretty text-muted-foreground sm:text-base"
                 >
-                  Este site contém produtos destinados a maiores de 18 anos. Ao entrar, você
-                  declara ter 18 anos ou mais.
-                </p>
+                  <p>
+                    A Permita-se trabalha com produtos destinados ao público adulto e conteúdos
+                    relacionados à sexualidade, intimidade, autoconhecimento e saúde íntima.
+                  </p>
+                  <p>
+                    Ao acessar e utilizar este site, você declara que possui 18 anos ou mais e está
+                    legalmente autorizado(a) a visualizar e adquirir os produtos e conteúdos disponibilizados.
+                  </p>
+                  <p>
+                    Nossos produtos são destinados exclusivamente a adultos e devem ser utilizados de
+                    acordo com suas respectivas orientações e recomendações de segurança.
+                  </p>
+                  <p>
+                    A Permita-se preza pelo respeito, pela privacidade, pelo bem-estar e pelo uso consciente
+                    de seus produtos e conteúdos.
+                  </p>
+                  <p className="font-medium text-foreground">
+                    Se você tiver menos de 18 anos, não prossiga com a navegação ou compra neste site.
+                  </p>
+                </div>
               </div>
 
               <div className="entrada mt-8 flex flex-col [--ordem:2]">

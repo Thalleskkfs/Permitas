@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { CAPTCHA_ENABLED } from "@/config/auth";
 import {
@@ -69,9 +70,22 @@ export async function requestPasswordResetAction(
   const captchaProblem = captchaGateMessage(token, CAPTCHA_ENABLED);
   if (captchaProblem) return errorState(captchaProblem);
 
+  const headerList = await headers();
+  const host = headerList.get("x-forwarded-host") || headerList.get("host");
+  const proto = headerList.get("x-forwarded-proto") || (host?.includes("localhost") || host?.includes("127.0.0.1") ? "http" : "https");
+
+  let origin = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "") || "";
+  if (!origin || (origin.includes("localhost") && host && !host.includes("localhost") && !host.includes("127.0.0.1"))) {
+    if (host) {
+      origin = `${proto}://${host}`;
+    }
+  } else if (!origin && host) {
+    origin = `${proto}://${host}`;
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/admin/redefinir-senha`,
+    redirectTo: `${origin}/admin/redefinir-senha`,
     captchaToken: token ?? undefined,
   });
 

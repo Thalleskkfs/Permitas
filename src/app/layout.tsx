@@ -23,8 +23,24 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
 export const metadata: Metadata = {
   metadataBase: siteUrl ? new URL(siteUrl) : undefined,
-  title: "catalogo-saas",
-  description: "Plataforma de catálogo de produtos.",
+  title: {
+    default: "Permita-se | Prazer, Autocuidado e Bem-Estar",
+    template: "%s — Permita-se",
+  },
+  description:
+    "A Permita-se nasceu para tornar o prazer acessível, seguro e sem tabus. Conheça nossa linha exclusiva de bem-estar íntimo e autocuidado.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png", sizes: "48x48" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/marca/favicon-preto.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

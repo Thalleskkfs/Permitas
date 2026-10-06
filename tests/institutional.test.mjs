@@ -45,12 +45,22 @@ describe("páginas institucionais", () => {
     });
   }
 
-  test("enquanto provisório, todo corpo de seção é marcador", () => {
-    assert.equal(PROVISIONAL, true);
-    for (const page of INSTITUTIONAL_PAGES) {
-      for (const section of page.sections) {
-        for (const paragraph of section.body) {
-          assert.match(paragraph, MARCADOR, `${page.slug} / ${section.heading}`);
+  test("quando definitivo, todo corpo de seção tem texto real preenchido", () => {
+    if (PROVISIONAL) {
+      for (const page of INSTITUTIONAL_PAGES) {
+        for (const section of page.sections) {
+          for (const paragraph of section.body) {
+            assert.match(paragraph, MARCADOR, `${page.slug} / ${section.heading}`);
+          }
+        }
+      }
+    } else {
+      for (const page of INSTITUTIONAL_PAGES) {
+        for (const section of page.sections) {
+          for (const paragraph of section.body) {
+            assert.ok(paragraph.trim().length > 0);
+            assert.ok(!paragraph.startsWith("[Texto a ser fornecido"), `${page.slug} / ${section.heading}`);
+          }
         }
       }
     }
