@@ -1,11 +1,9 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import type { StorefrontPaths } from "@/lib/storefront-paths";
 import type { CategoryPreview } from "@/modules/storefront/queries";
 import type { Store } from "@/types/catalog";
 import { Container } from "./Container";
+import { HeaderScrollEffect } from "./HeaderScrollEffect";
 import { MenuCategorias } from "./MenuCategorias";
 import { SearchIcon } from "./icons";
 import { LinkDaLista } from "./WishlistCount";
@@ -32,31 +30,19 @@ export function StoreHeader({
   categories?: CategoryPreview[];
   totalDeProdutos?: number;
 }) {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 15);
-    };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   // Aba de categorias do celular: cada categoria com a contagem real de produtos.
   const itensDoMenu = categories.map((category) => ({
     href: paths.category(category.slug),
     label: category.name,
     count: category.count,
   }));
+
   return (
     <header
-      className={`sticky top-0 z-40 rounded-b-2xl border-b transition-all duration-300 ease-out sm:rounded-b-3xl ${
-        scrolled
-          ? "bg-chrome/75 supports-[backdrop-filter]:backdrop-blur-md border-border/80 shadow-md shadow-black/20"
-          : "bg-chrome border-border/30 backdrop-blur-none"
-      } [@media(prefers-reduced-transparency:reduce)]:bg-chrome [@media(prefers-reduced-transparency:reduce)]:backdrop-blur-none`}
+      data-storefront-header
+      className="sticky top-0 z-40 rounded-b-2xl border-b sm:rounded-b-3xl [@media(prefers-reduced-transparency:reduce)]:!bg-chrome [@media(prefers-reduced-transparency:reduce)]:!backdrop-blur-none"
     >
+      <HeaderScrollEffect />
       <Container className="grid h-[5.5rem] grid-cols-[1fr_auto_1fr] items-center gap-3 sm:h-[5.5rem] lg:h-[4.5rem]">
         {/* Link, não campo: no celular um campo no cabeçalho espreme o logo. A página
             de busca tem o formulário e funciona sem JavaScript. */}
