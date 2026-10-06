@@ -74,13 +74,13 @@ export async function requestPasswordResetAction(
   const host = headerList.get("x-forwarded-host") || headerList.get("host");
   const proto = headerList.get("x-forwarded-proto") || (host?.includes("localhost") || host?.includes("127.0.0.1") ? "http" : "https");
 
-  let origin = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "") || "";
-  if (!origin || (origin.includes("localhost") && host && !host.includes("localhost") && !host.includes("127.0.0.1"))) {
-    if (host) {
-      origin = `${proto}://${host}`;
-    }
-  } else if (!origin && host) {
+  let origin = "";
+  if (host && !host.includes("localhost") && !host.includes("127.0.0.1")) {
     origin = `${proto}://${host}`;
+  } else if (process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost")) {
+    origin = process.env.NEXT_PUBLIC_SITE_URL.trim().replace(/\/+$/, "");
+  } else {
+    origin = "https://permitaseprazer.com.br";
   }
 
   const supabase = await createClient();

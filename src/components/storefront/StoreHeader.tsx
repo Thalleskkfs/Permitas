@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import type { StorefrontPaths } from "@/lib/storefront-paths";
 import type { CategoryPreview } from "@/modules/storefront/queries";
 import type { Store } from "@/types/catalog";
@@ -16,13 +19,7 @@ const ACAO =
 /**
  * Cabeçalho da vitrine: logo, busca e lista de interesse.
  *
- * Fica preso ao topo como uma camada translúcida sobre o conteúdo. O desfoque é fixo
- * (nunca animado), então o custo no celular é só o de composição da faixa. Sem
- * suporte a `backdrop-filter`, ou com transparência reduzida pedida pelo sistema, o
- * fundo fica sólido.
- *
- * O cabeçalho é de servidor; só o link da lista, que mostra quantos itens ela tem,
- * roda no navegador (`LinkDaLista`).
+ * Fica preso ao topo e ganha efeito de desfoque translúcido ao rolar a página para baixo.
  */
 export function StoreHeader({
   store,
@@ -35,6 +32,17 @@ export function StoreHeader({
   categories?: CategoryPreview[];
   totalDeProdutos?: number;
 }) {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 15);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Aba de categorias do celular: cada categoria com a contagem real de produtos.
   const itensDoMenu = categories.map((category) => ({
     href: paths.category(category.slug),
@@ -42,9 +50,13 @@ export function StoreHeader({
     count: category.count,
   }));
   return (
-    // Barra presa ao topo, de ponta a ponta: faz parte da borda de cima da tela, com só os
-    // cantos de baixo arredondados. Translúcida, então o conteúdo aparece por trás ao rolar.
-    <header className="sticky top-0 z-40 rounded-b-2xl border-b border-border bg-chrome/90 supports-[backdrop-filter]:bg-chrome/75 supports-[backdrop-filter]:backdrop-blur-md sm:rounded-b-3xl [@media(prefers-reduced-transparency:reduce)]:bg-chrome [@media(prefers-reduced-transparency:reduce)]:backdrop-blur-none">
+    <header
+      className={`sticky top-0 z-40 rounded-b-2xl border-b transition-all duration-300 ease-out sm:rounded-b-3xl ${
+        scrolled
+          ? "bg-chrome/75 supports-[backdrop-filter]:backdrop-blur-md border-border/80 shadow-md shadow-black/20"
+          : "bg-chrome border-border/30 backdrop-blur-none"
+      } [@media(prefers-reduced-transparency:reduce)]:bg-chrome [@media(prefers-reduced-transparency:reduce)]:backdrop-blur-none`}
+    >
       <Container className="grid h-[5.5rem] grid-cols-[1fr_auto_1fr] items-center gap-3 sm:h-[5.5rem] lg:h-[4.5rem]">
         {/* Link, não campo: no celular um campo no cabeçalho espreme o logo. A página
             de busca tem o formulário e funciona sem JavaScript. */}

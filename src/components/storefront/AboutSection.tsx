@@ -1,6 +1,12 @@
 import Image from "next/image";
+import localFont from "next/font/local";
 import type { StoreAbout } from "@/types/catalog";
 import { Container } from "./Container";
+
+const sephoraHayden = localFont({
+  src: "../../../public/fonts/sephora-hayden.ttf",
+  display: "swap",
+});
 
 const SIZES = "(min-width: 1024px) 64vw, 100vw";
 
@@ -11,7 +17,7 @@ const SIZES = "(min-width: 1024px) 64vw, 100vw";
  */
 const FRASE_CURTA = 180;
 const frase =
-  "font-display text-[length:var(--texto-titulo-1)] leading-[1.12] font-light tracking-[-0.02em] text-balance text-foreground";
+  `${sephoraHayden.className} text-[length:var(--texto-titulo-1)] sm:text-4xl lg:text-[2.6rem] leading-[1.25] text-balance text-foreground tracking-normal`;
 const textoCorrido = "max-w-[52ch] text-base leading-[1.65] text-pretty text-foreground/85 sm:text-lg";
 
 /**

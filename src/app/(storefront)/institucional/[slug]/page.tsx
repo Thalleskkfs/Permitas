@@ -60,9 +60,7 @@ export default async function InstitutionalPage({
 
   return (
     <>
-      {/* `isolate` prende o fundo do campo vinho atrás do conteúdo desta faixa. */}
-      <header className="relative isolate">
-        <div aria-hidden className="campo-vinho absolute inset-0 -z-10" />
+      <header className="relative isolate border-b border-border/30">
         <Container className="flex flex-col items-start pt-6 pb-10 sm:pt-8 sm:pb-14">
           <Breadcrumb items={[{ label: "Início", href: paths.home }, { label: page.title }]} />
 
