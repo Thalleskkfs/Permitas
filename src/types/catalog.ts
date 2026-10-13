@@ -13,6 +13,13 @@ export type VariantGroup = {
   options: VariantOption[];
 };
 
+export type ProductVariantItem = {
+  name: string;
+  price?: number;
+  stock: number;
+  options: Record<string, string>;
+};
+
 export type ProductInfoRow = {
   label: string;
   value: string;
@@ -30,6 +37,7 @@ export type Product = {
   badge?: string;
   images: ProductImage[];
   variants: VariantGroup[];
+  variantItems?: ProductVariantItem[];
   tags: string[];
   additionalInfo: ProductInfoRow[];
   categorySlugs: string[];

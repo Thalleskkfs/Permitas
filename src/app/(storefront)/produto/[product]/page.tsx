@@ -118,6 +118,7 @@ export default async function ProductPage({
               available={product.available}
               badge={product.badge}
               variants={product.variants}
+              variantItems={product.variantItems}
               whatsappNumber={store.whatsappNumber}
               whatsappMessageTemplate={store.whatsappMessageTemplate}
               highlights={store.hero?.highlights}

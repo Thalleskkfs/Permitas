@@ -57,7 +57,7 @@ const PRODUCT_COLUMNS = `id, slug, name, short_description, description, price_c
   promotional_price_cents, stock, featured, category_id,
   categories(slug),
   product_images(storage_path, alt_text, position),
-  product_variants(name, options, stock, position),
+  product_variants(name, options, stock, position, price_cents),
   product_tags(tags(name))`;
 
 const emptyPage: ProductPage = { products: [], total: 0 };

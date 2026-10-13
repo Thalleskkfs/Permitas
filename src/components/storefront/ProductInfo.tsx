@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { formatPrice } from "@/lib/format";
 import { storefrontPaths } from "@/lib/storefront-paths";
 import { buildWhatsAppUrl } from "@/modules/storefront/whatsapp";
-import type { VariantGroup } from "@/types/catalog";
+import type { ProductVariantItem, VariantGroup } from "@/types/catalog";
 import { AddToWishlistButton } from "./AddToWishlistButton";
 import { ProductVariants } from "./ProductVariants";
 import { PurchaseBar } from "./PurchaseBar";
@@ -22,6 +22,7 @@ type ProductInfoProps = {
   available: boolean;
   badge?: string;
   variants: VariantGroup[];
+  variantItems?: ProductVariantItem[];
   /** Número de WhatsApp da loja (`store_settings.whatsapp_number`). */
   whatsappNumber?: string | null;
   /** Modelo de mensagem da loja (`store_settings.whatsapp_message_template`). */
@@ -58,6 +59,7 @@ export function ProductInfo({
   available,
   badge,
   variants,
+  variantItems,
   whatsappNumber,
   whatsappMessageTemplate,
   productHref,
@@ -71,9 +73,28 @@ export function ProductInfo({
   // o produto sai da própria rota.
   const params = useParams<{ product: string }>();
 
-  const hasPromotion = promotionalPrice !== undefined;
-  const currentPrice = promotionalPrice ?? price;
+  // Confere se todos os grupos existentes foram selecionados
+  const allGroupsSelected =
+    variants.length > 0 && variants.every((group) => Boolean(selected[group.name]));
+
+  // Procura a variante correspondente a todas as opções selecionadas
+  const matchedVariant = allGroupsSelected
+    ? variantItems?.find((item) => {
+        const entries = Object.entries(item.options);
+        return entries.length > 0 && entries.every(([key, value]) => selected[key] === value);
+      })
+    : undefined;
+
+  const variantHasCustomPrice = matchedVariant?.price !== undefined;
+  const currentPrice = variantHasCustomPrice
+    ? (matchedVariant.price as number)
+    : (promotionalPrice ?? price);
+
+  const hasPromotion = !variantHasCustomPrice && promotionalPrice !== undefined;
   const discount = hasPromotion ? Math.round((1 - currentPrice / price) * 100) : 0;
+
+  const isVariantAvailable = matchedVariant ? matchedVariant.stock > 0 : true;
+  const effectiveAvailable = available && isVariantAvailable;
 
   // "Tamanho M · Cor Preto": mesma grafia que o carrinho usa, na ordem em que os
   // grupos aparecem na tela. Grupo ainda não escolhido simplesmente não entra.
@@ -98,7 +119,7 @@ export function ProductInfo({
       })
     : null;
 
-  const disabledReason = !available
+  const disabledReason = !effectiveAvailable
     ? "Produto indisponível no momento."
     : !whatsappUrl
       ? "O WhatsApp desta loja ainda não foi configurado."
@@ -184,7 +205,7 @@ export function ProductInfo({
           variants={variants}
           selected={selected}
           quantity={quantity}
-          available={available}
+          available={effectiveAvailable}
           wishlistHref={storefrontPaths().cart}
         />
       </div>

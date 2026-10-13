@@ -43,12 +43,13 @@ const seed = `
     ('${CAMISETA}', 'a/2.webp', 'Costas', 1),
     ('${CAMISETA}', 'a/1.webp', 'Frente', 0);
 
-  -- Tamanho G só existe numa variante INATIVA; Branco M está sem estoque.
+  -- Tamanho G só existe numa variante INATIVA; Branco M está sem estoque; Preto GG tem preço próprio.
   insert into public.product_variants
-    (store_id, product_id, name, stock, options, active, position) values
-    ('${S1}', '${CAMISETA}', 'Preto P',  3, '{"cor": "Preto", "tamanho": "P"}',  true,  0),
-    ('${S1}', '${CAMISETA}', 'Branco M', 0, '{"cor": "Branco", "tamanho": "M"}', true,  1),
-    ('${S1}', '${CAMISETA}', 'Preto G',  4, '{"cor": "Preto", "tamanho": "G"}',  false, 2);
+    (store_id, product_id, name, stock, options, active, position, price_cents) values
+    ('${S1}', '${CAMISETA}', 'Preto P',  3, '{"cor": "Preto", "tamanho": "P"}',  true,  0, null),
+    ('${S1}', '${CAMISETA}', 'Branco M', 0, '{"cor": "Branco", "tamanho": "M"}', true,  1, null),
+    ('${S1}', '${CAMISETA}', 'Preto G',  4, '{"cor": "Preto", "tamanho": "G"}',  false, 2, null),
+    ('${S1}', '${CAMISETA}', 'Preto GG', 2, '{"cor": "Preto", "tamanho": "GG"}', true,  3, 6500);
 `;
 
 const { rows } = setupDatabase(seed);
@@ -96,6 +97,18 @@ describe("dados atuais do banco", () => {
     assert.equal(item.originalPrice, 5000);
     assert.equal(item.variantLabel, "cor Preto · tamanho P");
     assert.deepEqual(item.image, { alt: "Frente" });
+    assert.equal(item.available, true);
+  });
+
+  test("variante com preço próprio substitui o preço base do produto", async () => {
+    const options = { cor: "Preto", tamanho: "GG" };
+    const result = await resolve(anon(), "loja-um", [entry("camiseta", 1, options)]);
+
+    assert.equal(result.ok, true);
+    const [item] = result.items;
+    assert.equal(item.unitPrice, 6500);
+    assert.equal(item.originalPrice, undefined);
+    assert.equal(item.variantLabel, "cor Preto · tamanho GG");
     assert.equal(item.available, true);
   });
 

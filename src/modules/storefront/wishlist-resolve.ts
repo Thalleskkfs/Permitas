@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { ProductImage } from "../../types/catalog.ts";
 import { storefrontPaths } from "../../lib/storefront-paths.ts";
-import { imageSrc, toVariantGroups, type ImageRow, type VariantRow } from "./mappers.ts";
+import { imageSrc, toOptions, toVariantGroups, type ImageRow, type VariantRow } from "./mappers.ts";
 import type { StorefrontClient } from "./reads.ts";
 import {
   WISHLIST_LIMITS,
@@ -94,7 +94,7 @@ type ResolvedProductRow = {
 // Só colunas que o papel anon pode ler (sem sku/updated_at: ver reads.ts).
 const RESOLVE_COLUMNS = `id, slug, name, price_cents, promotional_price_cents, stock,
   product_images(storage_path, alt_text, position),
-  product_variants(name, options, stock, position)`;
+  product_variants(name, options, stock, position, price_cents)`;
 
 /**
  * Confere a escolha contra as variantes ATIVAS de hoje, do mesmo jeito que a página de
@@ -119,7 +119,19 @@ function matchVariant(row: ResolvedProductRow, options: Record<string, string>) 
     parts.push(`${group.name} ${value}`);
   }
 
-  return { label: parts.join(" · ") || undefined, available };
+  const matchedVariantRow = (row.product_variants ?? []).find((v) => {
+    const opt = toOptions(v.options);
+    const entries = Object.entries(opt);
+    return entries.length === chosen.length && entries.every(([k, val]) => options[k] === val);
+  });
+
+  const variantStock = matchedVariantRow ? matchedVariantRow.stock > 0 : true;
+
+  return {
+    label: parts.join(" · ") || undefined,
+    available: available && variantStock,
+    priceCents: matchedVariantRow?.price_cents ?? null,
+  };
 }
 
 function firstImage(rows: ImageRow[] | null | undefined, name: string): ProductImage | undefined {
@@ -193,13 +205,19 @@ export async function resolveWishlistWith(
       }
 
       const promotional = row.promotional_price_cents;
+      const unitPrice = variant.priceCents ?? (promotional ?? row.price_cents);
+      const originalPrice = variant.priceCents
+        ? undefined
+        : promotional === null
+          ? undefined
+          : row.price_cents;
 
       resolved.push({
         key,
         name: row.name,
         href: paths.product(row.slug),
-        unitPrice: promotional ?? row.price_cents,
-        originalPrice: promotional === null ? undefined : row.price_cents,
+        unitPrice,
+        originalPrice,
         available: row.stock > 0 && variant.available,
         variantLabel: variant.label,
         image: firstImage(row.product_images, row.name),

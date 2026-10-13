@@ -4,6 +4,7 @@ import type {
   ProductCardData,
   HeroSlide,
   ProductImage,
+  ProductVariantItem,
   Store,
   StoreAbout,
   VariantGroup,
@@ -73,6 +74,7 @@ export type VariantRow = {
   options: unknown;
   stock: number;
   position: number;
+  price_cents?: number | null;
 };
 
 export type ProductCardRow = {
@@ -224,7 +226,7 @@ export function productOfLink(row: CollectionProductRow): ProductCardRow | null 
 }
 
 /** Opções em texto, como o banco garante: `{"cor": "Preto", "tamanho": "M"}`. */
-function toOptions(value: unknown): Record<string, string> {
+export function toOptions(value: unknown): Record<string, string> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
 
   return Object.fromEntries(
@@ -260,6 +262,15 @@ export function toVariantGroups(rows: VariantRow[] | null | undefined): VariantG
   }));
 }
 
+export function toVariantItems(rows: VariantRow[] | null | undefined): ProductVariantItem[] {
+  return byPosition(rows ?? []).map((row) => ({
+    name: row.name,
+    price: row.price_cents ?? undefined,
+    stock: row.stock,
+    options: toOptions(row.options),
+  }));
+}
+
 export function toProduct(row: ProductRow): Product {
   const category = first(row.categories);
 
@@ -274,6 +285,7 @@ export function toProduct(row: ProductRow): Product {
     badge: badge(row.promotional_price_cents),
     images: toImages(row.product_images, row.name),
     variants: toVariantGroups(row.product_variants),
+    variantItems: toVariantItems(row.product_variants),
     tags: (row.product_tags ?? [])
       .map((link) => first(link.tags)?.name)
       .filter((name): name is string => Boolean(name)),
