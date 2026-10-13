@@ -2,6 +2,13 @@ import type { Category, Product, ProductCardData, Store } from "../../types/cata
 import { storefrontPaths } from "../../lib/storefront-paths.ts";
 import type { createPublicClient } from "./supabase-public.ts";
 import {
+  type ProductSortOption,
+  type ProductSortOrder,
+  DEFAULT_PRODUCT_SORT,
+  parseProductSort,
+  PRODUCT_SORT_OPTIONS,
+} from "./sorting.ts";
+import {
   productOfLink,
   toCategory,
   toCollection,
@@ -42,7 +49,9 @@ export type ProductPagination = { offset: number; limit: number };
 
 export type ProductPage = { products: ProductCardData[]; total: number };
 
-export type { Collection };
+export type { Collection, ProductSortOption, ProductSortOrder };
+
+export { DEFAULT_PRODUCT_SORT, parseProductSort, PRODUCT_SORT_OPTIONS };
 
 const STORE_COLUMNS = "id, name, slug, description";
 const CATEGORY_COLUMNS = "id, name, slug, sort_order";
@@ -63,10 +72,21 @@ const PRODUCT_COLUMNS = `id, slug, name, short_description, description, price_c
 const emptyPage: ProductPage = { products: [], total: 0 };
 
 /** Ordem estável: sem o desempate por id, paginar poderia repetir ou pular produto. */
-function orderProducts<T extends { order: (column: string, options: { ascending: boolean }) => T }>(
+export function orderProducts<T extends { order: (column: string, options: { ascending: boolean }) => T }>(
   request: T,
+  order: ProductSortOption = DEFAULT_PRODUCT_SORT,
 ) {
-  return request.order("created_at", { ascending: false }).order("id", { ascending: true });
+  switch (order) {
+    case "menor-preco":
+      return request.order("price_cents", { ascending: true }).order("id", { ascending: true });
+    case "maior-preco":
+      return request.order("price_cents", { ascending: false }).order("id", { ascending: true });
+    case "mais-recentes":
+      return request.order("created_at", { ascending: false }).order("id", { ascending: true });
+    case "relevancia":
+    default:
+      return request.order("created_at", { ascending: false }).order("id", { ascending: true });
+  }
 }
 
 /** Offset e tamanho saneados: nada negativo, nada fracionário, página de pelo menos 1. */
@@ -254,6 +274,7 @@ export async function getCategoryProducts(
   storeSlug: string,
   categorySlug: string,
   pagination: ProductPagination,
+  order: ProductSortOption = DEFAULT_PRODUCT_SORT,
 ): Promise<ProductPage> {
   const storeId = await getStoreId(client, storeSlug);
   if (!storeId) return emptyPage;
@@ -272,7 +293,7 @@ export async function getCategoryProducts(
       .eq("status", "published");
 
   const { rows, total } = await readPage(
-    () => orderProducts(filtered(false)).range(from, to),
+    () => orderProducts(filtered(false), order).range(from, to),
     () => filtered(true),
     "Falha ao listar os produtos da categoria",
   );
@@ -396,6 +417,7 @@ export async function getAllProducts(
   client: StorefrontClient,
   storeSlug: string,
   pagination: ProductPagination,
+  order: ProductSortOption = DEFAULT_PRODUCT_SORT,
 ): Promise<ProductPage> {
   const storeId = await getStoreId(client, storeSlug);
   if (!storeId) return emptyPage;
@@ -410,7 +432,7 @@ export async function getAllProducts(
       .eq("status", "published");
 
   const { rows, total } = await readPage(
-    () => orderProducts(filtered(false)).range(from, to),
+    () => orderProducts(filtered(false), order).range(from, to),
     () => filtered(true),
     "Falha ao listar os produtos",
   );
@@ -458,6 +480,7 @@ export async function searchProducts(
   storeSlug: string,
   rawTerm: string,
   pagination: ProductPagination,
+  order: ProductSortOption = DEFAULT_PRODUCT_SORT,
 ): Promise<ProductPage> {
   const term = normalizeSearchTerm(rawTerm);
   if (!term) return emptyPage;
@@ -478,7 +501,7 @@ export async function searchProducts(
       .ilike("name", pattern);
 
   const { rows, total } = await readPage(
-    () => orderProducts(filtered(false)).range(from, to),
+    () => orderProducts(filtered(false), order).range(from, to),
     () => filtered(true),
     "Falha ao buscar produtos",
   );

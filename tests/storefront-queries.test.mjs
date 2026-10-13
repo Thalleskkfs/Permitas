@@ -785,3 +785,118 @@ describe("os filtros do código se sustentam sem a RLS", () => {
     assert.equal(total, 4);
   });
 });
+
+describe("ordenação da vitrine (ordenar por)", () => {
+  test("validação e normalização de parâmetros (parseProductSort)", () => {
+    assert.equal(reads.DEFAULT_PRODUCT_SORT, "relevancia");
+    // Default / inválidos
+    assert.equal(reads.parseProductSort(undefined), "relevancia");
+    assert.equal(reads.parseProductSort(null), "relevancia");
+    assert.equal(reads.parseProductSort(""), "relevancia");
+    assert.equal(reads.parseProductSort("qualquer-coisa"), "relevancia");
+    assert.equal(reads.parseProductSort("relevancia"), "relevancia");
+    assert.equal(reads.parseProductSort(["relevancia"]), "relevancia");
+
+    // Menor preço
+    assert.equal(reads.parseProductSort("menor-preco"), "menor-preco");
+    assert.equal(reads.parseProductSort("menor_preco"), "menor-preco");
+    assert.equal(reads.parseProductSort("price-asc"), "menor-preco");
+    assert.equal(reads.parseProductSort(["menor-preco"]), "menor-preco");
+
+    // Maior preço
+    assert.equal(reads.parseProductSort("maior-preco"), "maior-preco");
+    assert.equal(reads.parseProductSort("maior_preco"), "maior-preco");
+    assert.equal(reads.parseProductSort("price-desc"), "maior-preco");
+
+    // Mais recentes
+    assert.equal(reads.parseProductSort("mais-recentes"), "mais-recentes");
+    assert.equal(reads.parseProductSort("recentes"), "mais-recentes");
+    assert.equal(reads.parseProductSort("date-desc"), "mais-recentes");
+  });
+
+  test("categoria: ordena por menor preço (price_cents crescente)", async () => {
+    const { products, total } = await reads.getCategoryProducts(
+      anon(),
+      "loja-um",
+      "acessorios",
+      { offset: 0, limit: 4 },
+      "menor-preco",
+    );
+
+    assert.equal(total, 10);
+    // p-01 (1000), p-02 (2000), p-03 (3000), p-04 (4000)
+    assert.deepEqual(slugsOf(products), ["p-01", "p-02", "p-03", "p-04"]);
+    assert.deepEqual(
+      products.map((p) => p.price),
+      [1000, 2000, 3000, 4000],
+    );
+  });
+
+  test("categoria: ordena por maior preço (price_cents decrescente)", async () => {
+    const { products, total } = await reads.getCategoryProducts(
+      anon(),
+      "loja-um",
+      "acessorios",
+      { offset: 0, limit: 4 },
+      "maior-preco",
+    );
+
+    assert.equal(total, 10);
+    // p-10 (10000), p-09 (9000), p-08 (8000), p-07 (7000)
+    assert.deepEqual(slugsOf(products), ["p-10", "p-09", "p-08", "p-07"]);
+    assert.deepEqual(
+      products.map((p) => p.price),
+      [10000, 9000, 8000, 7000],
+    );
+  });
+
+  test("categoria: ordena por mais recentes (created_at decrescente)", async () => {
+    const { products, total } = await reads.getCategoryProducts(
+      anon(),
+      "loja-um",
+      "acessorios",
+      { offset: 0, limit: 4 },
+      "mais-recentes",
+    );
+
+    assert.equal(total, 10);
+    assert.deepEqual(slugsOf(products), ["p-01", "p-02", "p-03", "p-04"]);
+  });
+
+  test("todos os produtos: ordena por menor e maior preço", async () => {
+    const menor = await reads.getAllProducts(anon(), "loja-um", { offset: 0, limit: 3 }, "menor-preco");
+    assert.equal(menor.total, 18);
+    // Menores preços são 1000
+    assert.ok(menor.products.every((p) => p.price >= 1000));
+
+    const maior = await reads.getAllProducts(anon(), "loja-um", { offset: 0, limit: 3 }, "maior-preco");
+    assert.equal(maior.total, 18);
+    // Maior preço da base é p-10 (10000)
+    assert.equal(slugsOf(maior.products)[0], "p-10");
+    assert.equal(maior.products[0].price, 10000);
+  });
+
+  test("busca: ordena resultados por preço", async () => {
+    // "Produto" bate em p-01 até p-10
+    const menor = await reads.searchProducts(
+      anon(),
+      "loja-um",
+      "Produto",
+      { offset: 0, limit: 4 },
+      "menor-preco",
+    );
+    assert.equal(menor.total, 10);
+    assert.deepEqual(slugsOf(menor.products), ["p-01", "p-02", "p-03", "p-04"]);
+
+    const maior = await reads.searchProducts(
+      anon(),
+      "loja-um",
+      "Produto",
+      { offset: 0, limit: 4 },
+      "maior-preco",
+    );
+    assert.equal(maior.total, 10);
+    assert.deepEqual(slugsOf(maior.products), ["p-10", "p-09", "p-08", "p-07"]);
+  });
+});
+

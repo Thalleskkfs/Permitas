@@ -5,6 +5,7 @@ import { Breadcrumb } from "@/components/storefront/Breadcrumb";
 import { CategoryNav } from "@/components/storefront/CategoryNav";
 import { Container } from "@/components/storefront/Container";
 import { Pagination } from "@/components/storefront/Pagination";
+import { ProductSortSelect } from "@/components/storefront/ProductSortSelect";
 import { ChatIcon } from "@/components/storefront/icons";
 import {
   botaoVinho,
@@ -20,6 +21,7 @@ import {
   getCategories,
   getStore,
   normalizeSearchTerm,
+  parseProductSort,
   SEARCH_TERM_MAX_LENGTH,
   searchProducts,
 } from "@/modules/storefront/queries";
@@ -54,18 +56,24 @@ export default async function SearchPage({ searchParams }: PageProps<"/busca">) 
   const [store, categories] = await Promise.all([getStore(storeSlug), getCategories(storeSlug)]);
   if (!store) notFound();
 
-  const { q, page } = await searchParams;
+  const { q, page, ordem, sort } = await searchParams;
   // O termo exibido é o mesmo que a consulta usa: aparado e limitado.
   const termo = normalizeSearchTerm(first(q));
+  const sortOrder = parseProductSort(ordem ?? sort);
 
   const pedida = Number(first(page));
   const paginaAtual = Number.isInteger(pedida) && pedida > 0 ? pedida : 1;
 
   // Sem termo, nada é consultado: a página mostra só o campo.
-  const { products, total } = await searchProducts(storeSlug, termo, {
-    offset: (paginaAtual - 1) * PAGE_SIZE,
-    limit: PAGE_SIZE,
-  });
+  const { products, total } = await searchProducts(
+    storeSlug,
+    termo,
+    {
+      offset: (paginaAtual - 1) * PAGE_SIZE,
+      limit: PAGE_SIZE,
+    },
+    sortOrder,
+  );
 
   const totalDePaginas = Math.max(1, Math.ceil(total / PAGE_SIZE));
   if (products.length === 0 && total > 0) notFound();
@@ -74,8 +82,11 @@ export default async function SearchPage({ searchParams }: PageProps<"/busca">) 
 
   const perguntar = termo && total === 0 ? linkParaPerguntar(store.whatsappNumber, termo) : null;
 
-  const hrefDaPagina = (target: number) =>
-    `${paths.search}?${new URLSearchParams({ q: termo, page: String(target) })}`;
+  const hrefDaPagina = (target: number) => {
+    const query = new URLSearchParams({ q: termo, page: String(target) });
+    if (sortOrder !== "relevancia") query.set("ordem", sortOrder);
+    return `${paths.search}?${query.toString()}`;
+  };
 
   return (
     <>
@@ -117,10 +128,13 @@ export default async function SearchPage({ searchParams }: PageProps<"/busca">) 
           </form>
 
           {termo && total > 0 && (
-            <p className="text-sm text-muted-foreground tabular-nums">
-              {total} {total === 1 ? "resultado" : "resultados"} para{" "}
-              <span className="font-medium text-foreground">“{termo}”</span>
-            </p>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground tabular-nums">
+                {total} {total === 1 ? "resultado" : "resultados"} para{" "}
+                <span className="font-medium text-foreground">“{termo}”</span>
+              </p>
+              {total > 1 && <ProductSortSelect currentSort={sortOrder} />}
+            </div>
           )}
         </div>
 

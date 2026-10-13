@@ -20,6 +20,8 @@ import { createPublicClient } from "./supabase-public";
  */
 
 export type { CategoryPreview, Collection, ProductPage, ProductPagination };
+export type { ProductSortOption, ProductSortOrder } from "./sorting";
+export { PRODUCT_SORT_OPTIONS, parseProductSort, DEFAULT_PRODUCT_SORT } from "./sorting";
 
 // Funções puras, sem banco: a página de busca usa para mostrar o termo que foi de fato
 // procurado e para limitar o campo.
@@ -50,8 +52,9 @@ export async function getCategoryProducts(
   storeSlug: string,
   categorySlug: string,
   pagination: ProductPagination,
+  order?: reads.ProductSortOption,
 ): Promise<ProductPage> {
-  return reads.getCategoryProducts(createPublicClient(), storeSlug, categorySlug, pagination);
+  return reads.getCategoryProducts(createPublicClient(), storeSlug, categorySlug, pagination, order);
 }
 
 export async function getProduct(
@@ -86,16 +89,18 @@ export async function getRelatedProducts(
 export async function getAllProducts(
   storeSlug: string,
   pagination: ProductPagination,
+  order?: reads.ProductSortOption,
 ): Promise<ProductPage> {
-  return reads.getAllProducts(createPublicClient(), storeSlug, pagination);
+  return reads.getAllProducts(createPublicClient(), storeSlug, pagination, order);
 }
 
 export async function searchProducts(
   storeSlug: string,
   term: string,
   pagination: ProductPagination,
+  order?: reads.ProductSortOption,
 ): Promise<ProductPage> {
-  return reads.searchProducts(createPublicClient(), storeSlug, term, pagination);
+  return reads.searchProducts(createPublicClient(), storeSlug, term, pagination, order);
 }
 
 export async function getCollection(
