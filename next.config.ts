@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    unoptimized: true,
     // O otimizador só processa as duas origens de imagem que existem: a rota que serve
     // o catálogo a partir do bucket privado e os arquivos da marca. Qualquer outro
     // caminho local é recusado, em vez de o otimizador aceitar o que vier.
